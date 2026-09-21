@@ -42,14 +42,16 @@
           <i></i><i></i>
         </button>
         <div id="links">
-          <a href="#intro" data-nav="intro">INTRO</a
-          ><a href="#tech" data-nav="tech">TECH</a
-          ><a href="#vla" data-nav="vla">VLA</a
+          <a href="#intro" data-nav="intro">소개</a
+          ><a href="#tech" data-nav="tech">기술</a
+          ><a href="#vla" data-nav="vla">추론 구조</a
           ><a href="#alpamayo" data-nav="alpamayo"
             >ALPAMAYO</a
           ><a href="#simulation" data-nav="simulation"
-            >SIMULATION</a
-          ><a href="#safety" data-nav="safety">SAFETY</a>
+            >시뮬레이션</a
+          ><a href="#safety" data-nav="safety"
+            >안전과 한계</a
+          >
         </div>
       </nav>
     </header>
@@ -59,7 +61,7 @@
         <div class="wrap hero-grid">
           <div class="reveal">
             <p class="kicker">01 — 차세대 자율주행 기술</p>
-            <h1>REASONING<br /><span>ON THE ROAD</span></h1>
+            <h1>도로 위의<br /><span>AI 추론</span></h1>
             <p class="lead">
               자동차는 이제 도로를 보는 것을 넘어<br />주변
               상황을 이해하고 다음 행동을 추론하기
@@ -304,7 +306,7 @@
               REASONING-BASED VLA<br />FOR AUTONOMOUS
               DRIVING
             </p>
-            <h2><small>NVIDIA</small>ALPAMAYO</h2>
+            <h2><small>NVIDIA 사례</small>ALPAMAYO</h2>
           </header>
           <div class="alpa-body reveal">
             <p>
@@ -317,7 +319,7 @@
             <div>
               <article>
                 <b>01</b>
-                <h3>CONTEXT</h3>
+                <h3>상황 맥락</h3>
                 <p>
                   객체를 넘어 참여자의 관계와 인과 맥락을
                   분석합니다.
@@ -325,7 +327,7 @@
               </article>
               <article>
                 <b>02</b>
-                <h3>LONG-TAIL</h3>
+                <h3>희귀 상황</h3>
                 <p>
                   드문 시나리오를 데이터와 시뮬레이션으로
                   연구합니다.
@@ -333,7 +335,7 @@
               </article>
               <article>
                 <b>03</b>
-                <h3>TRAJECTORY</h3>
+                <h3>주행 궤적</h3>
                 <p>
                   추론 결과를 행동과 시간에 따른 궤적으로
                   연결합니다.
@@ -341,7 +343,7 @@
               </article>
               <article>
                 <b>04</b>
-                <h3>ECOSYSTEM</h3>
+                <h3>연구 생태계</h3>
                 <p>
                   모델·데이터·강화학습·폐루프 시뮬레이션을
                   연결합니다.
@@ -409,7 +411,7 @@
                 <li>
                   <b>01</b>
                   <div>
-                    <h3>OBJECT DETECTED</h3>
+                    <h3>장애 차량 발견</h3>
                     <p>
                       Parked vehicle blocking current lane.
                     </p>
@@ -419,7 +421,7 @@
                 <li>
                   <b>02</b>
                   <div>
-                    <h3>ONCOMING VEHICLE DETECTED</h3>
+                    <h3>맞은편 차량 발견</h3>
                     <p>
                       Unsafe to change lane immediately.
                     </p>
@@ -429,7 +431,7 @@
                 <li>
                   <b>03</b>
                   <div>
-                    <h3>SAFE PATH ANALYSIS</h3>
+                    <h3>안전 경로 분석</h3>
                     <p>Waiting for oncoming vehicle.</p>
                   </div>
                   <i>0.91</i>
@@ -437,7 +439,7 @@
                 <li>
                   <b>04</b>
                   <div>
-                    <h3>ACTION DECISION</h3>
+                    <h3>행동 결정</h3>
                     <p>
                       Prepare controlled lane deviation.
                     </p>
@@ -447,7 +449,7 @@
                 <li>
                   <b>05</b>
                   <div>
-                    <h3>TRAJECTORY GENERATED</h3>
+                    <h3>주행 경로 생성</h3>
                     <p>Safe path generated.</p>
                   </div>
                   <i>0.94</i>
@@ -461,7 +463,7 @@
       <section id="comparison">
         <div class="wrap">
           <header class="center reveal">
-            <p class="kicker">07 — ARCHITECTURE</p>
+            <p class="kicker">07 — 시스템 구조 비교</p>
             <h2>
               CONVENTIONAL <em>VS</em><br />REASONING AI
             </h2>
@@ -472,7 +474,7 @@
           </header>
           <div class="compare reveal">
             <article>
-              <h3>CONVENTIONAL<br />MODULAR SYSTEM</h3>
+              <h3>기존<br />모듈형 시스템</h3>
               <div>
                 SENSORS ↓ PERCEPTION ↓ PREDICTION ↓ PLANNING
                 ↓ CONTROL
@@ -487,7 +489,7 @@
             </article>
             <b>VS</b>
             <article>
-              <h3>REASONING /<br />VLA APPROACH</h3>
+              <h3>추론 기반<br />통합 접근</h3>
               <div>
                 CAMERA / SENSORS ↓ <em>REASONING AI</em> ↓
                 CONTEXT ↓ ACTION / TRAJECTORY
@@ -506,8 +508,10 @@
         <div class="wrap">
           <header class="split reveal">
             <div>
-              <p class="kicker">08 — SAE J3016</p>
-              <h2>LEVELS OF DRIVING AUTOMATION</h2>
+              <p class="kicker">
+                08 — 국제 자동화 단계 기준
+              </p>
+              <h2>자율주행<br />자동화 단계</h2>
             </div>
             <p>
               운전자와 시스템이 주행 과업을 어떻게
@@ -517,32 +521,32 @@
           <div class="levelbar reveal">
             <article>
               <b>0</b>
-              <h3>NO AUTOMATION</h3>
+              <h3>자동화 없음</h3>
               <p>자동화 없음</p>
             </article>
             <article>
               <b>1</b>
-              <h3>DRIVER ASSISTANCE</h3>
+              <h3>운전자 보조</h3>
               <p>조향 또는 가감속</p>
             </article>
             <article class="hot">
               <b>2</b>
-              <h3>PARTIAL</h3>
+              <h3>부분 자동화</h3>
               <p>조향과 가감속</p>
             </article>
             <article class="hot">
               <b>3</b>
-              <h3>CONDITIONAL</h3>
+              <h3>조건부 자동화</h3>
               <p>조건부 자동 주행</p>
             </article>
             <article>
               <b>4</b>
-              <h3>HIGH</h3>
+              <h3>고도 자동화</h3>
               <p>한정 조건 고도 자동화</p>
             </article>
             <article>
               <b>5</b>
-              <h3>FULL</h3>
+              <h3>완전 자동화</h3>
               <p>모든 조건 완전 자동화</p>
             </article>
           </div>
@@ -563,8 +567,10 @@
         <div class="wrap">
           <header class="split reveal">
             <div>
-              <p class="kicker">09 — SAFETY FIRST</p>
-              <h2>AUTONOMY STILL HAS <em>LIMITS.</em></h2>
+              <p class="kicker">09 — 안전과 기술의 한계</p>
+              <h2>
+                자율주행에도<br /><em>한계가 있습니다.</em>
+              </h2>
             </div>
             <div>
               <p>
@@ -625,10 +631,12 @@
       <section class="future" id="future">
         <div class="grid-bg"></div>
         <div class="wrap">
-          <p class="kicker reveal">10 — THE ROAD AHEAD</p>
+          <p class="kicker reveal">
+            10 — 앞으로의 자율주행
+          </p>
           <h2 class="reveal">
-            FROM<br /><span>PERCEPTION</span><br />TO
-            <em>REASONING.</em>
+            인식에서<br /><span>이해로</span><br />그리고
+            <em>추론으로.</em>
           </h2>
           <div class="future-copy reveal">
             <p>
@@ -650,8 +658,8 @@
       <section class="refs" id="references">
         <div class="wrap">
           <header class="section-head reveal">
-            <p class="kicker">11 — REFERENCES</p>
-            <div><h2>SOURCE NOTES</h2></div>
+            <p class="kicker">11 — 참고 자료</p>
+            <div><h2>참고 자료</h2></div>
           </header>
           <div class="ref-list reveal">
             <a
