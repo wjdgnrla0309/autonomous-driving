@@ -6,7 +6,12 @@
     bar = q("#progress"),
     menu = q("#menu"),
     links = q("#links"),
-    consoleEl = q("#console");
+    consoleEl = q("#console"),
+    decisionPanels = q("#decision-panels"),
+    sensorStage = q("#sensor-stage"),
+    vlaLive = q("#vla-live"),
+    comparisonPlayground = q("#comparison-playground"),
+    comparisonReplay = q("#comparison-replay");
   const update = () => {
     const y = scrollY,
       max =
@@ -96,14 +101,112 @@
         },
         { threshold: 0.25 },
       ).observe(consoleEl);
+    if (
+      decisionPanels &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      let comparisonVisible = false,
+        comparisonTimer;
+      const replayComparison = () => {
+        decisionPanels.classList.remove("playing");
+        void decisionPanels.offsetWidth;
+        decisionPanels.classList.add("playing");
+        clearTimeout(comparisonTimer);
+        if (comparisonVisible)
+          comparisonTimer = setTimeout(replayComparison, 8200);
+      };
+      new IntersectionObserver(
+        (es) => {
+          comparisonVisible = es[0].isIntersecting;
+          if (comparisonVisible) replayComparison();
+          else clearTimeout(comparisonTimer);
+        },
+        { threshold: 0.35 },
+      ).observe(decisionPanels);
+    }
+    [
+      sensorStage,
+      vlaLive,
+    ].forEach((element) => {
+      if (!element) return;
+      if (matchMedia("(prefers-reduced-motion: reduce)").matches)
+        return;
+      new IntersectionObserver(
+        (entries) =>
+          element.classList.toggle("playing", entries[0].isIntersecting),
+        { threshold: 0.3 },
+      ).observe(element);
+    });
+    if (
+      vlaLive &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      const messages = [
+        "앞에 장애물이 있음",
+        "접근 차량 확인",
+        "지금 우회하면 위험",
+        "기다린 후 우회",
+      ];
+      const copy = q(".reason-copy", vlaLive);
+      let messageIndex = 0,
+        messageTimer;
+      new IntersectionObserver(
+        (entries) => {
+          clearInterval(messageTimer);
+          if (entries[0].isIntersecting && copy)
+            messageTimer = setInterval(() => {
+              messageIndex = (messageIndex + 1) % messages.length;
+              copy.textContent = messages[messageIndex];
+            }, 1450);
+        },
+        { threshold: 0.3 },
+      ).observe(vlaLive);
+    }
+    if (
+      comparisonPlayground &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches
+    ) {
+      const steps = [[1, 0], [2, 1800], [3, 3700], [4, 5700], [5, 7700], [6, 9400]];
+      let timers = [], hasPlayed = false;
+      const playComparison = () => {
+        timers.forEach(clearTimeout);
+        comparisonPlayground.dataset.step = "0";
+        requestAnimationFrame(() =>
+          requestAnimationFrame(() =>
+            steps.forEach(([step, delay]) =>
+              timers.push(setTimeout(() => {
+                comparisonPlayground.dataset.step = String(step);
+              }, delay)),
+            ),
+          ),
+        );
+      };
+      comparisonReplay?.addEventListener("click", playComparison);
+      new IntersectionObserver((entries, observer) => {
+        if (entries[0].isIntersecting && !hasPlayed) {
+          hasPlayed = true;
+          playComparison();
+          observer.unobserve(comparisonPlayground);
+        }
+      }, { threshold: 0.3 }).observe(comparisonPlayground);
+    }
   } else {
     qa(".reveal").forEach((e) => e.classList.add("shown"));
     consoleEl?.classList.add("running");
+    decisionPanels?.classList.add("playing");
+    sensorStage?.classList.add("playing");
+    vlaLive?.classList.add("playing");
+    if (comparisonPlayground) comparisonPlayground.dataset.step = "6";
   }
   if (
     matchMedia("(prefers-reduced-motion: reduce)").matches
-  )
+  ) {
     consoleEl?.classList.add("running");
+    decisionPanels?.classList.add("playing", "reduced");
+    sensorStage?.classList.add("playing", "reduced");
+    vlaLive?.classList.add("playing", "reduced");
+    if (comparisonPlayground) comparisonPlayground.dataset.step = "6";
+  }
   const year = q("#year");
   if (year) year.textContent = new Date().getFullYear();
 })();
