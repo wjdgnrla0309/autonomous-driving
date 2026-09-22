@@ -166,22 +166,44 @@
       comparisonPlayground &&
       !matchMedia("(prefers-reduced-motion: reduce)").matches
     ) {
-      const steps = [[1, 0], [2, 1800], [3, 3700], [4, 5700], [5, 7700], [6, 9400]];
-      let timers = [], hasPlayed = false;
+      // 비교 화면은 data-step 값을 바꾸며 여섯 단계의 장면을 순서대로 표시합니다.
+      // [단계, 시작까지의 지연 시간(ms)]
+      const steps = [
+        [1, 0],    // 1. 정차 차량(BLOCKED)을 감지
+        [2, 1800], // 2. 마주 오는 차량(ONCOMING)을 감지
+        [3, 3700], // 3. 일반 시스템은 정지, Reasoning AI는 안전 간격을 기다림
+        [4, 5700], // 4. Reasoning AI가 마주 오는 차량의 통과를 관찰
+        [5, 7700], // 5. 안전 간격과 회피 경로를 표시
+        [6, 9400], // 6. Reasoning AI 차량이 경로를 따라 회피 주행
+      ];
+
+      let timers = [];
+      let hasPlayed = false;
+
+      // 재생 버튼 클릭 또는 섹션 첫 진입 때 호출됩니다.
       const playComparison = () => {
+        // 이전 재생 예약을 취소한 뒤 초기 장면으로 되돌립니다.
         timers.forEach(clearTimeout);
         comparisonPlayground.dataset.step = "0";
+
+        // 브라우저가 초기 상태를 먼저 그린 다음, 각 단계를 예약합니다.
         requestAnimationFrame(() =>
           requestAnimationFrame(() =>
-            steps.forEach(([step, delay]) =>
-              timers.push(setTimeout(() => {
-                comparisonPlayground.dataset.step = String(step);
-              }, delay)),
-            ),
+            steps.forEach(([step, delay]) => {
+              timers.push(
+                setTimeout(() => {
+                  comparisonPlayground.dataset.step = String(step);
+                }, delay),
+              );
+            }),
           ),
         );
       };
+
+      // REPLAY 버튼을 누르면 처음부터 다시 재생합니다.
       comparisonReplay?.addEventListener("click", playComparison);
+
+      // 화면에 처음 보일 때 한 번만 자동 재생합니다.
       new IntersectionObserver((entries, observer) => {
         if (entries[0].isIntersecting && !hasPlayed) {
           hasPlayed = true;

@@ -1350,7 +1350,73 @@ footer p {
 .center-line { position:absolute; top:0; bottom:0; left:50%; border-left:2px dashed rgba(255,255,255,.45); }.direction { position:absolute; left:1rem; bottom:1rem; color:#89928a; font:700 .65rem var(--body); }
 .top-car { position:absolute; z-index:3; width:62px;height:96px; border:2px solid currentColor; border-radius:20px 20px 12px 12px; background:#202620; display:grid;place-items:end center; padding-bottom:8px; font:700 .58rem/1 var(--display); transition:transform 1.4s ease,opacity 1.2s ease; }.top-car i{position:absolute;top:12px;width:35px;height:22px;border:1px solid currentColor;border-radius:9px 9px 3px 3px}.top-car span{white-space:nowrap}.my-car{right:21%;bottom:8%;color:#f0f4ef}.parked{right:21%;bottom:39%;color:#d79b60}.oncoming{left:21%;top:8%;color:#b9c0ba}.detect { position:absolute;z-index:4; padding:.3rem .45rem; border:1px solid currentColor; font:700 .62rem var(--display); opacity:0; transition:opacity .45s ease; }.blocked-detect{right:14%;bottom:59%;color:#e1a166}.oncoming-detect{left:14%;top:31%;color:#d4dbd5}.road-status,.reason-state{position:absolute;z-index:5;left:50%;top:52%;transform:translate(-50%,-50%);text-align:center;font:700 clamp(1.2rem,2.2vw,1.8rem)/.9 var(--display);letter-spacing:.06em;opacity:0;transition:opacity .45s ease}.road-status{color:#e88071}.road-status small{display:block;font-size:.5em;margin-top:.35rem}.reason-state{color:var(--lime)}.safe-gap-label{position:absolute;z-index:5;left:50%;top:31%;transform:translateX(-50%);color:var(--lime);font:700 .9rem var(--display);opacity:0;transition:opacity .45s ease}.maneuver-path{position:absolute;inset:0;width:100%;height:100%;z-index:2}.maneuver-path path{fill:none;stroke:var(--lime);stroke-width:4;stroke-dasharray:9 10;stroke-dashoffset:420;opacity:0;filter:drop-shadow(0 0 4px var(--lime));transition:stroke-dashoffset 1.5s linear,opacity .35s ease}.side-note{margin:.7rem 1.2rem}.result-card{padding:1rem 1.2rem;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:1rem;font:.75rem var(--body);opacity:.2;transition:opacity .5s ease}.result-card b{font-family:var(--display);letter-spacing:.06em}.result-card span{color:var(--muted)}
 .compare-flow{display:grid;grid-template-columns:1fr 45px 1fr;align-items:center;margin-top:1.25rem;text-align:center;font:.68rem/1.6 var(--display);letter-spacing:.08em;color:var(--muted)}.compare-flow b{color:white}.compare-flow i{color:var(--lime);font-style:normal}.replay-button{display:block;margin:1.5rem auto 0;padding:.8rem 1.2rem;border:1px solid var(--lime);background:transparent;color:var(--lime);font:700 .7rem var(--display);letter-spacing:.12em;cursor:pointer}.replay-button:hover{background:var(--lime);color:#071005}.comparison-note small{display:block;margin-top:1rem;color:#737b75;font-size:.78em}
-.compare-playground[data-step="1"] .blocked-detect,.compare-playground[data-step="2"] .detect,.compare-playground[data-step="3"] .detect,.compare-playground[data-step="4"] .detect,.compare-playground[data-step="5"] .detect,.compare-playground[data-step="6"] .detect{opacity:1}.compare-playground[data-step="2"] .oncoming{transform:translateY(60px)}.compare-playground[data-step="3"] .stop-status,.compare-playground[data-step="3"] .reason-state,.compare-playground[data-step="4"] .stop-status,.compare-playground[data-step="4"] .reason-state,.compare-playground[data-step="5"] .stop-status,.compare-playground[data-step="5"] .reason-state,.compare-playground[data-step="6"] .stop-status{opacity:1}.compare-playground[data-step="4"] .reasoning-side .oncoming,.compare-playground[data-step="5"] .reasoning-side .oncoming,.compare-playground[data-step="6"] .reasoning-side .oncoming{transform:translateY(225px);opacity:.15;transition:1.4s}.compare-playground[data-step="5"] .safe-gap-label,.compare-playground[data-step="6"] .safe-gap-label{opacity:1}.compare-playground[data-step="5"] .maneuver-path path,.compare-playground[data-step="6"] .maneuver-path path{opacity:1;stroke-dashoffset:0;transition:1.4s linear}.compare-playground[data-step="6"] .reasoning-side .my-car{transform:translate(-52px,-265px);transition:2s ease-in-out}.compare-playground[data-step="6"] .result-card{opacity:1}.compare-playground[data-step="6"] .conventional-side .result-card{color:#e1a166}.compare-playground[data-step="6"] .reasoning-side .result-card b{color:var(--lime)}
+/*
+  비교 모션의 화면 상태입니다.
+  script.js가 #comparison-playground의 data-step 값을 1~6으로 변경하면
+  아래 규칙이 감지 정보, 차량, 경로, 결과를 순서대로 보여 줍니다.
+*/
+
+/* 1단계: 정차 차량을 감지합니다. */
+.compare-playground[data-step="1"] .blocked-detect,
+.compare-playground[data-step="2"] .detect,
+.compare-playground[data-step="3"] .detect,
+.compare-playground[data-step="4"] .detect,
+.compare-playground[data-step="5"] .detect,
+.compare-playground[data-step="6"] .detect {
+  opacity: 1;
+}
+
+/* 2단계: 맞은편 차량이 도로로 들어옵니다. */
+.compare-playground[data-step="2"] .oncoming {
+  transform: translateY(60px);
+}
+
+/* 3단계: 일반 시스템은 STOP, Reasoning AI는 안전 간격을 기다립니다. */
+.compare-playground[data-step="3"] .stop-status,
+.compare-playground[data-step="3"] .reason-state,
+.compare-playground[data-step="4"] .stop-status,
+.compare-playground[data-step="4"] .reason-state,
+.compare-playground[data-step="5"] .stop-status,
+.compare-playground[data-step="5"] .reason-state,
+.compare-playground[data-step="6"] .stop-status {
+  opacity: 1;
+}
+
+/* 4단계: Reasoning AI 쪽의 맞은편 차량이 지나가며 안전 간격을 만듭니다. */
+.compare-playground[data-step="4"] .reasoning-side .oncoming,
+.compare-playground[data-step="5"] .reasoning-side .oncoming,
+.compare-playground[data-step="6"] .reasoning-side .oncoming {
+  transform: translateY(225px);
+  opacity: 0.15;
+  transition: 1.4s;
+}
+
+/* 5단계: 안전 간격과 선택된 회피 궤적을 표시합니다. */
+.compare-playground[data-step="5"] .safe-gap-label,
+.compare-playground[data-step="6"] .safe-gap-label {
+  opacity: 1;
+}
+.compare-playground[data-step="5"] .maneuver-path path,
+.compare-playground[data-step="6"] .maneuver-path path {
+  opacity: 1;
+  stroke-dashoffset: 0;
+  transition: 1.4s linear;
+}
+
+/* 6단계: Reasoning AI 차량이 회피 궤적을 따라 주행하고 결과를 표시합니다. */
+.compare-playground[data-step="6"] .reasoning-side .my-car {
+  transform: translate(-52px, -265px);
+  transition: 2s ease-in-out;
+}
+.compare-playground[data-step="6"] .result-card {
+  opacity: 1;
+}
+.compare-playground[data-step="6"] .conventional-side .result-card {
+  color: #e1a166;
+}
+.compare-playground[data-step="6"] .reasoning-side .result-card b {
+  color: var(--lime);
+}
 .decision-panels { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 .decision-panel { min-width: 0; border: 1px solid var(--line); background: var(--panel); overflow: hidden; }
 .decision-panel > header { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem 1.2rem; border-bottom: 1px solid var(--line); font: 600 .62rem/1.3 var(--display); letter-spacing: .1em; }
@@ -1642,6 +1708,10 @@ footer p {
 }
 @keyframes data-flow-vertical { 12%,35%{transform:translateY(0)} 45%,100%{transform:translateY(110%)} }
 
+/*
+  5단계에서는 경로를 숨겨 두었다가, 6단계부터 선을 그리며 차량 회피를 보여 줍니다.
+  위의 기본 step 규칙보다 뒤에 있어 실제 최종 모션 속도(2.8초)를 결정합니다.
+*/
 .compare-playground[data-step="5"] .maneuver-path path {
   opacity: 0;
   stroke-dashoffset: 420;
@@ -1654,6 +1724,12 @@ footer p {
 .compare-playground[data-step="6"] .reasoning-side .my-car {
   animation: avoid-blocked-car 2.8s cubic-bezier(.45, 0, .25, 1) forwards;
 }
+
+/*
+  차량 회피 경로의 좌표입니다.
+  - 0~50%: 왼쪽 차선으로 이동해 정차 차량을 피함
+  - 75~100%: 원래 진행 차선으로 복귀
+*/
 @keyframes avoid-blocked-car {
   0% { transform: translate(0, 0); }
   25% { transform: translate(-80px, -80px); }
@@ -1692,7 +1768,7 @@ footer p {
 
 /* 읽기 쉬운 본문 스케일: 한글 설명을 우선해 모바일에서도 충분한 크기를 유지합니다. */
 body {
-  font-size: 17px;
+  font-size: 18px;
 }
 .section-head > div > p,
 .split > div:last-child,
@@ -1766,11 +1842,78 @@ body {
   font-size: 0.82rem;
 }
 .kicker {
-  font-size: 0.72rem;
+  font-size: 0.82rem;
+}
+
+/* 읽기 편한 최소 크기와 대비를 유지하는 보조 정보 보정 */
+:root {
+  --muted: #aab1ac;
+}
+.brand {
+  font-size: 0.8rem;
+}
+.team-credit {
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+.team-credit strong {
+  font-size: 0.74rem;
+}
+#links a,
+.hudbar,
+.hero-foot,
+.flow article > span,
+.scenarios article > b,
+.pipeline > div,
+.logs header,
+.logs li > b,
+.logs li > i,
+.compare article > div,
+.ref-list b,
+.sensor-key,
+.compare-side > header,
+.decision-panel > header {
+  font-size: 0.75rem;
+}
+.pipeline div small,
+.ref-list small,
+.vla-node small,
+.compare-side > header span,
+.side-note,
+.disclaimer,
+.comparison-note small {
+  font-size: 0.88rem;
+  line-height: 1.65;
+}
+.sensor-object,
+.sensor-vehicle,
+.top-car,
+.detect,
+.direction,
+.road-car,
+.stop-line,
+.safe-gap,
+.decision-log li {
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+.decision-log li:before {
+  font-size: 0.68rem;
+}
+.compare-flow,
+.replay-button {
+  font-size: 0.8rem;
+}
+.logs p,
+.result-card,
+.level-note,
+.notice,
+.comparison-note {
+  color: #c1c7c2;
 }
 @media (max-width: 767px) {
   body {
-    font-size: 16px;
+    font-size: 17px;
   }
   .section-head > div > p,
   .split > div:last-child,
@@ -1799,8 +1942,15 @@ body {
   }
   .level-note,
   .notice {
-    font-size: 0.92rem;
+    font-size: 1rem;
   }
+  .brand { font-size: 0.76rem; }
+  .team-credit { font-size: 0.66rem; }
+  #links a, .hudbar, .hero-foot, .flow article > span, .scenarios article > b,
+  .pipeline > div, .logs header, .logs li > b, .logs li > i, .compare article > div,
+  .ref-list b, .sensor-key, .compare-side > header, .decision-panel > header { font-size: 0.7rem; }
+  .pipeline div small, .ref-list small, .vla-node small, .compare-side > header span,
+  .side-note, .disclaimer, .comparison-note small { font-size: 0.82rem; }
 }
 
 /* 한글 가독성 보정: 영문용 압축 자간을 완화하고 단어 단위로 자연스럽게 줄바꿈합니다. */
