@@ -1,61 +1,82 @@
 (() => {
   "use strict";
 
-  const q = (s, p = document) => p.querySelector(s);
-  const qa = (s, p = document) => [...p.querySelectorAll(s)];
-  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  const q = (selector, parent = document) => parent.querySelector(selector);
+  const qa = (selector, parent = document) => [
+    ...parent.querySelectorAll(selector)
+  ];
+
+  const reducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  );
+
+
+  /* =========================================================
+     GLOBAL UI
+  ========================================================== */
 
   const header = q("#header");
   const progress = q("#progress");
   const menu = q("#menu");
   const links = q("#links");
   const consoleEl = q("#console");
-  const sensorStage = q("#sensor-stage");
-  const vlaLive = q("#vla-live");
 
-  const updateScroll = () => {
-    const max =
-      document.documentElement.scrollHeight -
-      innerHeight;
+
+  const updateScrollUI = () => {
+    const maxScroll = Math.max(
+      document.documentElement.scrollHeight - window.innerHeight,
+      0
+    );
 
     if (progress) {
+      const ratio =
+        maxScroll > 0
+          ? window.scrollY / maxScroll
+          : 0;
+
       progress.style.width =
         `${
-          max
-            ? Math.min(
-                (scrollY / max) * 100,
-                100
-              )
-            : 0
+          Math.min(
+            Math.max(ratio, 0),
+            1
+          ) * 100
         }%`;
     }
 
     header?.classList.toggle(
       "scrolled",
-      scrollY > 20
+      window.scrollY > 20
     );
   };
 
-  let scrollTick = false;
 
-  addEventListener(
+  let scrollFrame = 0;
+
+
+  window.addEventListener(
     "scroll",
     () => {
-      if (scrollTick) return;
+      if (scrollFrame) return;
 
-      scrollTick = true;
+      scrollFrame =
+        requestAnimationFrame(() => {
+          updateScrollUI();
 
-      requestAnimationFrame(() => {
-        updateScroll();
-        scrollTick = false;
-      });
+          scrollFrame = 0;
+        });
     },
     {
       passive: true
     }
   );
 
-  updateScroll();
+
+  updateScrollUI();
+
+
+  /* =========================================================
+     MOBILE MENU
+  ========================================================== */
 
   const closeMenu = () => {
     menu?.setAttribute(
@@ -63,12 +84,15 @@
       "false"
     );
 
-    links?.classList.remove("open");
+    links?.classList.remove(
+      "open"
+    );
 
     document.body.classList.remove(
       "nav-open"
     );
   };
+
 
   menu?.addEventListener(
     "click",
@@ -95,41 +119,62 @@
     }
   );
 
+
   links?.addEventListener(
     "click",
-    e =>
-      e.target.closest("a") &&
-      closeMenu()
+    event => {
+      if (
+        event.target.closest("a")
+      ) {
+        closeMenu();
+      }
+    }
   );
 
-  addEventListener(
+
+  window.addEventListener(
     "keydown",
-    e =>
-      e.key === "Escape" &&
-      closeMenu()
+    event => {
+      if (
+        event.key === "Escape"
+      ) {
+        closeMenu();
+      }
+    }
   );
+
+
+  /* =========================================================
+     REVEAL ANIMATION
+  ========================================================== */
 
   if (
-    "IntersectionObserver" in window
+    "IntersectionObserver" in window &&
+    !reducedMotion.matches
   ) {
-    const reveal =
+    const revealObserver =
       new IntersectionObserver(
-        (entries, observer) => {
-          entries.forEach(entry => {
-            if (
-              !entry.isIntersecting
-            ) {
-              return;
+        (
+          entries,
+          observer
+        ) => {
+          entries.forEach(
+            entry => {
+              if (
+                !entry.isIntersecting
+              ) {
+                return;
+              }
+
+              entry.target.classList.add(
+                "shown"
+              );
+
+              observer.unobserve(
+                entry.target
+              );
             }
-
-            entry.target.classList.add(
-              "shown"
-            );
-
-            observer.unobserve(
-              entry.target
-            );
-          });
+          );
         },
         {
           threshold: 0.12,
@@ -138,18 +183,38 @@
         }
       );
 
-    qa(".reveal").forEach(el =>
-      reveal.observe(el)
-    );
 
-    const nav =
+    qa(".reveal").forEach(
+      element =>
+        revealObserver.observe(
+          element
+        )
+    );
+  } else {
+    qa(".reveal").forEach(
+      element =>
+        element.classList.add(
+          "shown"
+        )
+    );
+  }
+
+
+  /* =========================================================
+     ACTIVE NAV
+  ========================================================== */
+
+  if (
+    "IntersectionObserver" in window
+  ) {
+    const navObserver =
       new IntersectionObserver(
         entries => {
-          const active =
+          const activeEntry =
             entries
               .filter(
-                e =>
-                  e.isIntersecting
+                entry =>
+                  entry.isIntersecting
               )
               .sort(
                 (a, b) =>
@@ -157,28 +222,40 @@
                   a.intersectionRatio
               )[0];
 
-          if (!active) return;
+
+          if (!activeEntry) {
+            return;
+          }
+
+
+          const sectionName =
+            activeEntry.target.dataset
+              .section;
+
 
           qa("#links a").forEach(
-            a => {
-              const on =
-                a.dataset.nav ===
-                active.target.dataset
-                  .section;
+            anchor => {
+              const active =
+                anchor.dataset.nav ===
+                sectionName;
 
-              a.classList.toggle(
+
+              anchor.classList.toggle(
                 "active",
-                on
+                active
               );
 
-              on
-                ? a.setAttribute(
-                    "aria-current",
-                    "page"
-                  )
-                : a.removeAttribute(
-                    "aria-current"
-                  );
+
+              if (active) {
+                anchor.setAttribute(
+                  "aria-current",
+                  "page"
+                );
+              } else {
+                anchor.removeAttribute(
+                  "aria-current"
+                );
+              }
             }
           );
         },
@@ -187,483 +264,198 @@
             0.2,
             0.45
           ],
+
           rootMargin:
             "-18% 0px -50%"
         }
       );
 
+
     qa(
       "section[data-section]"
-    ).forEach(s =>
-      nav.observe(s)
+    ).forEach(
+      section =>
+        navObserver.observe(
+          section
+        )
     );
+  }
 
-    if (consoleEl) {
+
+  /* =========================================================
+     DEVELOPMENT LOOP
+  ========================================================== */
+
+  if (consoleEl) {
+    if (
+      reducedMotion.matches ||
+      !(
+        "IntersectionObserver" in
+        window
+      )
+    ) {
+      consoleEl.classList.add(
+        "running"
+      );
+    } else {
       new IntersectionObserver(
-        (entries, observer) => {
+        (
+          entries,
+          observer
+        ) => {
           if (
             !entries[0]
-              .isIntersecting
+              ?.isIntersecting
           ) {
             return;
           }
 
+
           consoleEl.classList.add(
             "running"
           );
+
 
           observer.disconnect();
         },
         {
           threshold: 0.25
         }
-      ).observe(consoleEl);
+      ).observe(
+        consoleEl
+      );
     }
-
-    [
-      sensorStage,
-      vlaLive
-    ].forEach(el => {
-      if (
-        !el ||
-        reduced.matches
-      ) {
-        return;
-      }
-
-      new IntersectionObserver(
-        entries => {
-          el.classList.toggle(
-            "playing",
-            entries[0]
-              .isIntersecting
-          );
-        },
-        {
-          threshold: 0.3
-        }
-      ).observe(el);
-    });
-  } else {
-    qa(".reveal").forEach(
-      el =>
-        el.classList.add(
-          "shown"
-        )
-    );
-
-    consoleEl?.classList.add(
-      "running"
-    );
-
-    sensorStage?.classList.add(
-      "playing"
-    );
-
-    vlaLive?.classList.add(
-      "playing"
-    );
   }
 
-  if (
-    vlaLive &&
-    !reduced.matches &&
-    "IntersectionObserver" in
-      window
-  ) {
-    const copy = q(
-      ".reason-copy",
-      vlaLive
-    );
 
-    const messages = [
-      "앞에 장애물이 있음",
-      "반대 차량 접근 확인",
-      "통과 가능한 공간 분석",
-      "안전한 행동 결정"
-    ];
-
-    let index = 0;
-    let timer = 0;
-
-    new IntersectionObserver(
-      entries => {
-        clearInterval(timer);
-
-        if (
-          !entries[0]
-            .isIntersecting ||
-          !copy
-        ) {
-          return;
-        }
-
-        index = 0;
-
-        copy.textContent =
-          messages[0];
-
-        timer = setInterval(
-          () => {
-            index =
-              (index + 1) %
-              messages.length;
-
-            copy.textContent =
-              messages[index];
-          },
-          1450
-        );
-      },
-      {
-        threshold: 0.3
-      }
-    ).observe(vlaLive);
-  }
+  /* =========================================================
+     UNIFIED COMPARISON
+  ========================================================== */
 
   const comparison = q(
     "#comparison-unified"
   );
 
+
   if (comparison) {
-    if (
-      !q(
-        "#unified-runtime-style"
-      )
-    ) {
-      const style =
-        document.createElement(
-          "style"
-        );
 
-      style.id =
-        "unified-runtime-style";
+    const phase = q(
+      "#unified-phase",
+      comparison
+    );
 
-      style.textContent = `
 
-        #comparison-unified .v2-ego {
-          will-change: transform;
-        }
+    const title = q(
+      "#unified-title",
+      comparison
+    );
 
-        #comparison-unified .v2-trajectory,
-        #comparison-unified .v2-trajectory path {
-          pointer-events: none;
-        }
 
-        #comparison-unified .v2-trajectory path {
-          fill: none;
-          vector-effect: non-scaling-stroke;
-          stroke-linecap: round;
-          stroke-linejoin: round;
-          will-change: stroke-dashoffset;
-        }
+    const subtitle = q(
+      "#unified-subtitle",
+      comparison
+    );
 
-        #comparison-unified .reason-node {
-          display: block;
-        }
 
-        #comparison-unified .reason-arrow {
-          display: block;
-          text-align: center;
-          opacity: .5;
-          padding: 4px 0;
-          line-height: 1;
-        }
+    const caption = q(
+      "#unified-caption",
+      comparison
+    );
 
-        #comparison-unified .stage-control {
-          width: min(
-            720px,
-            calc(100% - 24px)
-          );
-
-          margin: 18px auto 0;
-          padding: 12px;
-
-          display: grid;
-
-          grid-template-columns:
-            100px
-            minmax(0, 1fr)
-            100px;
-
-          gap: 10px;
-
-          align-items: center;
-
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .12
-            );
-
-          border-radius: 16px;
-
-          background:
-            rgba(
-              8,
-              13,
-              23,
-              .84
-            );
-
-          box-shadow:
-            0 14px 40px
-            rgba(
-              0,
-              0,
-              0,
-              .18
-            );
-
-          backdrop-filter:
-            blur(12px);
-        }
-
-        #comparison-unified
-        .stage-control button,
-        #comparison-unified
-        .stage-replay {
-          border:
-            1px solid
-            rgba(
-              255,
-              255,
-              255,
-              .14
-            );
-
-          border-radius: 11px;
-
-          background:
-            rgba(
-              255,
-              255,
-              255,
-              .065
-            );
-
-          color: inherit;
-
-          font: inherit;
-
-          font-weight: 700;
-
-          cursor: pointer;
-        }
-
-        #comparison-unified
-        .stage-control button {
-          min-height: 44px;
-          padding: 0 14px;
-        }
-
-        #comparison-unified
-        .stage-control
-        button:disabled {
-          opacity: .35;
-          cursor: default;
-        }
-
-        #comparison-unified
-        .stage-readout {
-          text-align: center;
-          min-width: 0;
-
-          display: grid;
-
-          gap: 2px;
-        }
-
-        #comparison-unified
-        .stage-count {
-          font-size: 11px;
-
-          letter-spacing:
-            .12em;
-
-          opacity: .58;
-        }
-
-        #comparison-unified
-        .stage-name {
-          font-size: 14px;
-          font-weight: 800;
-
-          overflow: hidden;
-
-          text-overflow:
-            ellipsis;
-
-          white-space: nowrap;
-        }
-
-        #comparison-unified
-        .stage-actions {
-          display: flex;
-
-          justify-content:
-            center;
-
-          margin:
-            8px auto 0;
-        }
-
-        #comparison-unified
-        .stage-replay {
-          min-height: 38px;
-
-          padding:
-            0 14px;
-
-          border-radius:
-            999px;
-
-          background:
-            transparent;
-
-          font-size: 12px;
-
-          opacity: .8;
-        }
-
-        @media
-        (max-width: 640px) {
-
-          #comparison-unified
-          .stage-control {
-            grid-template-columns:
-              76px
-              minmax(0, 1fr)
-              76px;
-
-            gap: 7px;
-            padding: 9px;
-          }
-
-          #comparison-unified
-          .stage-control button {
-            padding:
-              0 8px;
-
-            font-size:
-              12px;
-          }
-
-          #comparison-unified
-          .stage-name {
-            font-size:
-              12px;
-          }
-        }
-
-      `;
-
-      document.head.append(
-        style
-      );
-    }
-
-    const phase =
-      q(
-        "#unified-phase",
-        comparison
-      ) ||
-      q("#unified-phase");
-
-    const title =
-      q(
-        "#unified-title",
-        comparison
-      ) ||
-      q("#unified-title");
-
-    const subtitle =
-      q(
-        "#unified-subtitle",
-        comparison
-      ) ||
-      q(
-        "#unified-subtitle"
-      );
-
-    const caption =
-      q(
-        "#unified-caption",
-        comparison
-      ) ||
-      q(
-        "#unified-caption"
-      );
 
     const reasoning = q(
       ".unified-reasoning",
       comparison
     );
 
+
     const stepItems = qa(
       ".unified-steps li",
       comparison
     );
 
-    qa(
-      ".unified-system",
+
+    const unifiedHead = q(
+      ".unified-head",
       comparison
-    ).forEach(
-      b =>
-        b.hidden = true
     );
 
-    [
-      q("#unified-next"),
-      q("#unified-previous"),
-      q("#unified-replay")
-    ].forEach(el => {
-      if (el) {
-        el.hidden = true;
-      }
-    });
 
-    const roads = qa(
+    const road = q(
       ".v2-road",
       comparison
     );
 
-    const road =
-      roads[0] || null;
 
-    roads
-      .slice(1)
-      .forEach(r => {
-        r.hidden = true;
+    const ego = q(
+      ".v2-ego",
+      comparison
+    );
 
-        r.setAttribute(
-          "aria-hidden",
-          "true"
-        );
-      });
 
-    const ego =
-      road
-        ? q(
-            ".v2-ego",
-            road
-          )
-        : null;
+    const path = q(
+      ".v2-trajectory path",
+      comparison
+    );
 
-    const path =
-      road
-        ? q(
-            ".v2-trajectory path",
-            road
-          )
-        : null;
 
     const svg =
-      path?.closest("svg") ||
+      path?.closest("svg") ??
       null;
+
+
+    comparison.tabIndex = 0;
+
+
+    comparison.setAttribute(
+      "aria-label",
+      "기존 자율주행과 NVIDIA Alpamayo의 판단 과정 비교"
+    );
+
+
+    /* =========================================================
+       OLD HTML CONTROL HIDE
+    ========================================================== */
+
+    const legacyControls = q(
+      ".unified-controls",
+      comparison
+    );
+
+
+    if (legacyControls) {
+      legacyControls.hidden = true;
+    }
+
+
+    [
+      q(
+        "#unified-next",
+        comparison
+      ),
+
+      q(
+        "#unified-previous",
+        comparison
+      ),
+
+      q(
+        "#unified-replay",
+        comparison
+      )
+
+    ].forEach(
+      element => {
+        if (element) {
+          element.hidden = true;
+        }
+      }
+    );
+
+
+    /* =========================================================
+       ROAD TRAJECTORY
+    ========================================================== */
 
     const PATH_D =
       "M240 482 " +
@@ -674,11 +466,13 @@
       "C198 116 222 105 240 94 " +
       "C240 58 240 18 240 -20";
 
+
     if (path) {
       path.setAttribute(
         "d",
         PATH_D
       );
+
 
       path.setAttribute(
         "vector-effect",
@@ -686,11 +480,13 @@
       );
     }
 
+
     if (svg) {
       svg.setAttribute(
         "viewBox",
         "0 0 320 560"
       );
+
 
       svg.setAttribute(
         "preserveAspectRatio",
@@ -698,59 +494,67 @@
       );
     }
 
-    qa(
+
+    /* =========================================================
+       ROAD TEXT
+    ========================================================== */
+
+    const setText = (
+      selector,
+      text
+    ) => {
+      const element = q(
+        selector,
+        comparison
+      );
+
+
+      if (element) {
+        element.textContent =
+          text;
+      }
+    };
+
+
+    setText(
       ".v2-road-label",
-      comparison
-    ).forEach(
-      el =>
-        el.textContent =
-          "같은 도로 상황"
+      "같은 도로 상황"
     );
 
-    qa(
+
+    setText(
       ".v2-ego",
-      comparison
-    ).forEach(
-      el =>
-        el.textContent =
-          "내 차"
+      "내 차"
     );
 
-    qa(
+
+    setText(
       ".v2-blocked",
-      comparison
-    ).forEach(
-      el =>
-        el.textContent =
-          "장애물"
+      "장애물"
     );
 
-    qa(
+
+    setText(
       ".v2-oncoming",
-      comparison
-    ).forEach(
-      el =>
-        el.textContent =
-          "반대 차량"
+      "반대 차량"
     );
 
-    qa(
+
+    setText(
       ".v2-detection-blocked",
-      comparison
-    ).forEach(
-      el =>
-        el.textContent =
-          "장애물 감지"
+      "장애물 감지"
     );
 
-    qa(
+
+    setText(
       ".v2-detection-oncoming",
-      comparison
-    ).forEach(
-      el =>
-        el.textContent =
-          "반대 차량 감지"
+      "반대 차량 감지"
     );
+
+
+    /* =========================================================
+       PREDICTION LABEL
+    ========================================================== */
 
     if (
       road &&
@@ -759,19 +563,29 @@
         road
       )
     ) {
-      const el =
+      const prediction =
         document.createElement(
           "span"
         );
 
-      el.className =
+
+      prediction.className =
         "v2-prediction";
 
-      el.textContent =
+
+      prediction.textContent =
         "예상 이동 경로";
 
-      road.append(el);
+
+      road.append(
+        prediction
+      );
     }
+
+
+    /* =========================================================
+       CANDIDATE PATH
+    ========================================================== */
 
     if (
       road &&
@@ -780,46 +594,87 @@
         road
       )
     ) {
-      const el =
+      const candidates =
         document.createElement(
           "div"
         );
 
-      el.className =
+
+      candidates.className =
         "v2-candidates";
 
-      el.innerHTML =
-        "<i></i><i></i><i></i>";
 
-      el.setAttribute(
+      candidates.setAttribute(
         "aria-hidden",
         "true"
       );
 
-      road.append(el);
+
+      candidates.innerHTML =
+        "<i></i><i></i><i></i>";
+
+
+      road.append(
+        candidates
+      );
     }
 
-    const C = [
+
+    const blockedDetection = q(
+      ".v2-detection-blocked",
+      comparison
+    );
+
+
+    const oncomingDetection = q(
+      ".v2-detection-oncoming",
+      comparison
+    );
+
+
+    const predictionLabel = q(
+      ".v2-prediction",
+      comparison
+    );
+
+
+    const candidatePaths = q(
+      ".v2-candidates",
+      comparison
+    );
+
+
+    /* =========================================================
+       STEP LABELS
+    ========================================================== */
+
+    const conventionalSteps = [
       "인식",
       "예측",
       "계획",
       "제어"
     ];
 
-    const A = [
+
+    const reasoningSteps = [
       "장면 이해",
       "인과 추론",
       "행동 결정",
       "궤적 출력"
     ];
 
-    const S = (
+
+    /* =========================================================
+       STAGE MAKER
+    ========================================================== */
+
+    const makeStage = (
       name,
       mode,
-      ph,
-      ti,
-      sub,
-      cap,
+      phaseText,
+      titleText,
+      subtitleText,
+      captionText,
       steps = [],
       active = -1,
       reason = [],
@@ -827,45 +682,69 @@
     ) => ({
       name,
       mode,
-      ph,
-      ti,
-      sub,
-      cap,
+      phaseText,
+      titleText,
+      subtitleText,
+      captionText,
       steps,
       active,
       reason,
       drive
     });
 
+
+    /* =========================================================
+       ANIMATION STAGES
+    ========================================================== */
+
     const stages = [
-      S(
+
+      makeStage(
         "상황 소개",
         "intro",
+
         "SAME ROAD SCENARIO",
+
         "같은 주행 상황",
+
         "같은 도로 · 같은 차량 · 같은 장애물",
-        "두 시스템은 같은 주행 결과를 선택할 수 있습니다. 차이는 판단 과정입니다."
+
+        "두 시스템은 동일하거나 유사한 주행 행동을 선택할 수 있습니다. 차이는 행동에 도달하는 판단 과정입니다."
       ),
 
-      S(
+
+      makeStage(
         "기존 자율주행",
         "modular",
+
         "CONVENTIONAL AUTONOMY",
+
         "기존 자율주행",
+
         "Perception → Prediction → Planning → Control",
-        "먼저 기존 모듈형 자율주행 시스템의 판단 과정을 확인합니다.",
-        C
+
+        "먼저 전형적인 모듈형 자율주행 시스템의 처리 흐름을 확인합니다.",
+
+        conventionalSteps
       ),
 
-      S(
+
+      makeStage(
         "인식",
         "modular",
+
         "PERCEPTION",
+
         "주변 환경을 인식",
+
         "Perception",
-        "센서와 인식 모델을 통해 객체와 도로 구조를 감지합니다.",
-        C,
+
+        "센서 입력과 인식 모델을 이용해 차량, 장애물, 차선과 도로 구조를 파악합니다.",
+
+        conventionalSteps,
+
         0,
+
         [
           "장애물 감지",
           "반대 차량 감지",
@@ -873,15 +752,23 @@
         ]
       ),
 
-      S(
+
+      makeStage(
         "예측",
         "modular",
+
         "PREDICTION",
+
         "주변 차량의 움직임을 예측",
+
         "Prediction",
-        "반대 차량이 앞으로 어떻게 이동할지 예측합니다.",
-        C,
+
+        "감지한 객체가 앞으로 어떻게 움직일지 예측하고 시간에 따른 위치 변화를 계산합니다.",
+
+        conventionalSteps,
+
         1,
+
         [
           "반대 차량 진행 방향",
           "예상 위치 계산",
@@ -889,172 +776,261 @@
         ]
       ),
 
-      S(
+
+      makeStage(
         "계획",
         "modular",
+
         "PLANNING",
-        "가능한 경로를 계산",
+
+        "가능한 경로를 비교",
+
         "Planning",
-        "충돌 위험과 도로 제약조건을 고려해 후보 경로를 비교합니다.",
-        C,
+
+        "도로 제약, 예측 결과와 충돌 가능성을 고려해 여러 후보 궤적을 평가합니다.",
+
+        conventionalSteps,
+
         2,
+
         [
-          "후보 경로 비교",
-          "충돌 위험 계산",
+          "후보 궤적 생성",
+          "충돌 위험 평가",
           "안전 여유 확인",
-          "주행 경로 선택"
+          "주행 궤적 선택"
         ]
       ),
 
-      S(
-        "기존 방식 주행",
+
+      makeStage(
+        "기존 시스템 주행",
         "modular",
+
         "CONTROL",
+
         "선택한 궤적을 실행",
+
         "Slow → Pass → Return",
-        "궤적을 먼저 생성한 뒤 차량이 천천히 그 경로를 따라 이동합니다.",
-        C,
+
+        "선택된 궤적을 따라 감속하며 장애물을 우회한 뒤 원래 차로로 복귀하는 예시입니다.",
+
+        conventionalSteps,
+
         3,
+
         [
           "선택된 궤적 실행"
         ],
+
         true
       ),
 
-      S(
+
+      makeStage(
         "장면 초기화",
         "reset",
+
         "SAME SCENE",
+
         "같은 상황으로 되돌립니다",
+
         "도로와 차량 조건은 그대로",
-        "이제 같은 상황을 NVIDIA Alpamayo의 판단 과정으로 다시 확인합니다."
+
+        "이제 같은 장면을 NVIDIA Alpamayo의 추론 표현 방식으로 다시 살펴봅니다."
       ),
 
-      S(
+
+      makeStage(
         "Alpamayo 소개",
         "reasoning",
+
         "NVIDIA ALPAMAYO",
-        "같은 상황, 다른 판단 과정",
+
+        "같은 상황, 다른 판단 표현",
+
         "Understand → Reason → Decide → Act",
-        "이번에는 장면 이해와 인과적 추론 과정에 주목하세요.",
-        A
+
+        "Alpamayo에서는 장면 이해와 Chain-of-Causation 추론, 행동 결정과 궤적 생성을 함께 살펴봅니다.",
+
+        reasoningSteps
       ),
 
-      S(
+
+      makeStage(
         "장면 이해",
         "reasoning",
+
         "SCENE UNDERSTANDING",
-        "장면 전체를 이해",
+
+        "장면의 관계를 함께 이해",
+
         "Scene Understanding",
-        "개별 객체뿐 아니라 도로 공간과 객체 사이의 관계를 함께 해석합니다.",
-        A,
+
+        "개별 객체뿐 아니라 진행 차로, 장애물, 반대 차량과 사용 가능한 공간 사이의 관계를 함께 해석합니다.",
+
+        reasoningSteps,
+
         0,
+
         [
           "진행 차로 일부가 막힘",
           "반대 차량이 접근 중",
-          "통과 가능한 공간 존재"
+          "주변 공간과 상대 위치를 함께 해석"
         ]
       ),
 
-      S(
+
+      makeStage(
         "인과 추론",
         "reasoning",
+
         "CAUSAL REASONING",
-        "상황의 관계를 추론",
-        "Causal Reasoning",
-        "왜 해당 행동이 가능한지 상황의 관계를 연결해 판단합니다.",
-        A,
+
+        "가능한 행동의 결과를 추론",
+
+        "Chain of Causation",
+
+        "장애물을 통과하려면 어떤 조건이 필요한지, 반대 차량과의 여유가 충분한지 등을 연결해 판단합니다.",
+
+        reasoningSteps,
+
         1,
+
         [
-          "장애물이 진행 차로를 일부 차단",
-          "반대 차량과 통과 여유 확인",
-          "감속하면 안전 여유 증가",
-          "통제된 우회 통과 가능"
+          "장애물이 진행 차로 일부를 차단",
+          "반대 차량과의 시간·공간 여유 평가",
+          "감속 시 확보되는 여유 검토",
+          "통과 가능한 후보 행동 평가"
         ]
       ),
 
-      S(
+
+      makeStage(
         "행동 결정",
         "reasoning",
+
         "ACTION DECISION",
-        "행동 결정",
+
+        "행동을 결정",
+
         "Reduce speed and pass",
-        "추론 결과를 바탕으로 감속 후 통과하는 행동을 선택합니다.",
-        A,
+
+        "이 개념 예시에서는 충분한 안전 여유가 확보된다고 판단했을 때 감속 후 우회 통과하는 행동을 선택합니다.",
+
+        reasoningSteps,
+
         2,
+
         [
           "ACTION",
-          "감속 후 안전하게 통과"
+          "감속 후 통과",
+          "안전 여유가 부족하면 다른 행동을 선택"
         ]
       ),
 
-      S(
+
+      makeStage(
         "Alpamayo 주행",
         "reasoning",
+
         "TRAJECTORY OUTPUT",
-        "주행 궤적 생성",
+
+        "주행 궤적을 생성",
+
         "Slow → Pass → Return",
-        "최종 이동 경로는 기존 시스템과 동일할 수 있습니다.",
-        A,
+
+        "최종적으로 생성되는 이동 경로는 기존 시스템이 선택한 경로와 동일하거나 유사할 수 있습니다.",
+
+        reasoningSteps,
+
         3,
+
         [
-          "통과 궤적 생성",
+          "주행 궤적 생성",
           "선택된 궤적 실행"
         ],
+
         true
       ),
 
-      S(
+
+      makeStage(
         "결론",
         "final",
-        "SAME ACTION",
-        "Same Action",
+
+        "SAME POSSIBLE ACTION",
+
+        "같은 행동에 도달할 수 있습니다",
+
         "Different Decision Process",
-        "같은 주행 결과를 만들 수 있지만, 그 결정을 만드는 구조가 다릅니다.",
+
+        "이 예시의 핵심은 어느 시스템이 더 과감하게 움직이는지가 아니라, 행동을 결정하고 그 근거를 표현하는 방식의 차이입니다.",
+
         [],
+
         -1,
+
         [
-          "Conventional · Detect → Predict → Plan → Act",
-          "Alpamayo · Understand → Reason → Decide → Act"
+          "Conventional · Perception → Prediction → Planning → Control",
+
+          "Alpamayo · Scene Understanding → Reasoning → Action → Trajectory"
         ]
       )
+
     ];
 
-    const hold = [
-      1800,
+
+    /* =========================================================
+       AUTO PLAY HOLD TIME
+    ========================================================== */
+
+    const stageHold = [
+      1900,
+      1700,
+      2100,
+      2100,
+      2400,
+
+      9800,
+
       1600,
       1900,
-      1900,
-      2200,
-      8200,
-      1500,
-      1700,
-      2200,
-      2800,
-      2100,
-      8200,
-      6000
+      2300,
+      2900,
+      2300,
+
+      9800,
+
+      6500
     ];
+
+
+    /* =========================================================
+       NEW CONTROLS
+    ========================================================== */
 
     q(
       ".stage-runtime",
       comparison
     )?.remove();
 
+
     const controls =
       document.createElement(
         "div"
       );
 
+
     controls.className =
       "stage-runtime";
+
 
     controls.innerHTML = `
 
       <div
         class="stage-control"
         role="group"
-        aria-label="애니메이션 단계 이동"
+        aria-label="비교 애니메이션 단계 이동"
       >
 
         <button
@@ -1063,6 +1039,7 @@
         >
           ← 이전
         </button>
+
 
         <div
           class="stage-readout"
@@ -1079,6 +1056,7 @@
 
         </div>
 
+
         <button
           type="button"
           class="stage-next"
@@ -1087,6 +1065,7 @@
         </button>
 
       </div>
+
 
       <div
         class="stage-actions"
@@ -1103,128 +1082,182 @@
 
     `;
 
-   // ==========================================================
-// 단계 이동 컨트롤 위치
-// 제목/설명 바로 아래 + 애니메이션 바로 위
-// ==========================================================
 
-const titleArea =
-  subtitle?.parentElement ||
-  title?.parentElement;
+    /*
+     * 제목 바로 아래에
+     * 이전 / 다음 버튼 삽입
+     */
 
-if (titleArea) {
-  titleArea.insertAdjacentElement(
-    "afterend",
-    controls
-  );
-} else if (road) {
-  road.parentElement.insertBefore(
-    controls,
-    road
-  );
-} else {
-  comparison.prepend(controls);
-}
+    if (unifiedHead) {
+      unifiedHead.insertAdjacentElement(
+        "afterend",
+        controls
+      );
+    } else {
+      comparison.prepend(
+        controls
+      );
+    }
 
-    const prev = q(
+
+    const prevButton = q(
       ".stage-prev",
       controls
     );
 
-    const next = q(
+
+    const nextButton = q(
       ".stage-next",
       controls
     );
 
-    const replay = q(
+
+    const replayButton = q(
       ".stage-replay",
       controls
     );
 
-    const count = q(
+
+    const stageCount = q(
       ".stage-count",
       controls
     );
 
-    const name = q(
+
+    const stageName = q(
       ".stage-name",
       controls
     );
 
-    let stage = 0;
+
+    /* =========================================================
+       STATE
+    ========================================================== */
+
+    let currentStage = 0;
+
+    let autoMode = false;
+
+    let hasPlayed = false;
+
+    let isVisible = false;
+
 
     let autoTimer = 0;
+
     let loopTimer = 0;
+
     let delayTimer = 0;
-    let frame = 0;
 
-    let visible = false;
-    let played = false;
-    let auto = false;
+    let animationFrame = 0;
 
-    const stopMotion = () => {
-      cancelAnimationFrame(
-        frame
-      );
+    let resizeTimer = 0;
 
-      clearTimeout(
-        delayTimer
-      );
 
-      frame = 0;
+    /* =========================================================
+       TIMER CLEANUP
+    ========================================================== */
+
+    const clearMotion = () => {
+      if (animationFrame) {
+        cancelAnimationFrame(
+          animationFrame
+        );
+      }
+
+
+      if (delayTimer) {
+        clearTimeout(
+          delayTimer
+        );
+      }
+
+
+      animationFrame = 0;
+
       delayTimer = 0;
     };
 
-    const stopAuto = () => {
-      clearTimeout(
-        autoTimer
-      );
 
-      clearTimeout(
-        loopTimer
-      );
+    const clearAutoTimers = () => {
+      if (autoTimer) {
+        clearTimeout(
+          autoTimer
+        );
+      }
+
+
+      if (loopTimer) {
+        clearTimeout(
+          loopTimer
+        );
+      }
+
 
       autoTimer = 0;
+
       loopTimer = 0;
     };
 
+
+    /* =========================================================
+       REASONING TEXT
+    ========================================================== */
+
     const setReasoning =
       lines => {
-        if (!reasoning) return;
+
+        if (!reasoning) {
+          return;
+        }
+
 
         reasoning.replaceChildren();
 
+
         lines.forEach(
-          (text, i) => {
+          (
+            line,
+            index
+          ) => {
+
             const node =
               document.createElement(
                 "span"
               );
 
+
             node.className =
               "reason-node";
 
+
             node.textContent =
-              text;
+              line;
+
 
             reasoning.append(
               node
             );
 
+
             if (
-              i <
+              index <
               lines.length - 1
             ) {
+
               const arrow =
                 document.createElement(
                   "span"
                 );
 
+
               arrow.className =
                 "reason-arrow";
 
+
               arrow.textContent =
                 "↓";
+
 
               reasoning.append(
                 arrow
@@ -1234,61 +1267,114 @@ if (titleArea) {
         );
       };
 
+
+    /* =========================================================
+       STEP UI
+    ========================================================== */
+
     const setSteps = (
       labels,
-      active
-    ) =>
+      activeIndex
+    ) => {
+
       stepItems.forEach(
-        (item, i) => {
+        (
+          item,
+          index
+        ) => {
+
+          const label =
+            labels[index] ?? "";
+
+
           item.textContent =
-            labels[i] || "";
+            label;
+
 
           item.hidden =
-            !labels[i];
+            !label;
+
 
           item.classList.toggle(
             "active",
-            i === active
+            index === activeIndex
           );
+
 
           item.classList.toggle(
             "complete",
-            active >= 0 &&
-              i < active
+            activeIndex >= 0 &&
+              index < activeIndex
           );
         }
       );
+    };
 
-    const updateControls =
-      () => {
-        if (count) {
-          count.textContent =
-            `STEP ${
-              stage + 1
-            } / ${
-              stages.length
-            }`;
-        }
 
-        if (name) {
-          name.textContent =
-            stages[stage].name;
-        }
+    /* =========================================================
+       CONTROL UI UPDATE
+    ========================================================== */
 
-        if (prev) {
-          prev.disabled =
-            stage === 0;
-        }
+    const updateControls = () => {
 
-        if (next) {
-          next.disabled =
-            stage ===
-            stages.length - 1;
-        }
-      };
+      if (stageCount) {
+        stageCount.textContent =
+          `STEP ${
+            currentStage + 1
+          } / ${
+            stages.length
+          }`;
+      }
 
-    const pathPointLocal =
-      p => {
+
+      if (stageName) {
+        stageName.textContent =
+          stages[
+            currentStage
+          ].name;
+      }
+
+
+      if (prevButton) {
+        prevButton.disabled =
+          currentStage === 0;
+      }
+
+
+      if (nextButton) {
+        nextButton.disabled =
+          currentStage ===
+          stages.length - 1;
+      }
+    };
+
+
+    /* =========================================================
+       SVG PATH LENGTH
+    ========================================================== */
+
+    const pathLength = () => {
+
+      if (!path) {
+        return 0;
+      }
+
+
+      try {
+        return path.getTotalLength();
+      } catch {
+        return 0;
+      }
+    };
+
+
+    /* =========================================================
+       SVG COORDINATE → ROAD COORDINATE
+    ========================================================== */
+
+    const pathPointOnRoad =
+      progressValue => {
+
         if (
           !path ||
           !road
@@ -1296,64 +1382,182 @@ if (titleArea) {
           return null;
         }
 
-        const len =
-          path.getTotalLength();
 
-        const pt =
-          path.getPointAtLength(
-            len * p
+        const length =
+          pathLength();
+
+
+        if (!length) {
+          return null;
+        }
+
+
+        const normalizedProgress =
+          Math.min(
+            Math.max(
+              progressValue,
+              0
+            ),
+            1
           );
+
+
+        const point =
+          path.getPointAtLength(
+            length *
+              normalizedProgress
+          );
+
 
         const matrix =
           path.getScreenCTM();
+
 
         if (!matrix) {
           return null;
         }
 
-        let screen;
+
+        let screenPoint;
+
 
         if (
           typeof DOMPoint !==
           "undefined"
         ) {
-          screen =
+
+          screenPoint =
             new DOMPoint(
-              pt.x,
-              pt.y
+              point.x,
+              point.y
             ).matrixTransform(
               matrix
             );
+
         } else {
-          const sp =
-            path.ownerSVGElement
+
+          const svgPoint =
+            path
+              .ownerSVGElement
               .createSVGPoint();
 
-          sp.x = pt.x;
-          sp.y = pt.y;
 
-          screen =
-            sp.matrixTransform(
-              matrix
-            );
+          svgPoint.x =
+            point.x;
+
+
+          svgPoint.y =
+            point.y;
+
+
+          screenPoint =
+            svgPoint
+              .matrixTransform(
+                matrix
+              );
         }
 
-        const rr =
-          road.getBoundingClientRect();
+
+        const roadRect =
+          road
+            .getBoundingClientRect();
+
 
         return {
           x:
-            screen.x -
-            rr.left,
+            screenPoint.x -
+            roadRect.left,
 
           y:
-            screen.y -
-            rr.top
+            screenPoint.y -
+            roadRect.top
         };
       };
 
+
+    /* =========================================================
+       CAR ANGLE
+    ========================================================== */
+
+    const pathAngleOnRoad =
+      progressValue => {
+
+        const delta = 0.006;
+
+
+        const before =
+          pathPointOnRoad(
+            Math.max(
+              0,
+              progressValue -
+                delta
+            )
+          );
+
+
+        const after =
+          pathPointOnRoad(
+            Math.min(
+              1,
+              progressValue +
+                delta
+            )
+          );
+
+
+        if (
+          !before ||
+          !after
+        ) {
+          return 0;
+        }
+
+
+        const angleFromXAxis =
+          Math.atan2(
+            after.y -
+              before.y,
+
+            after.x -
+              before.x
+          ) *
+          (
+            180 /
+            Math.PI
+          );
+
+
+        /*
+         * 자동차 기본 방향이 위쪽이므로
+         * SVG 진행 방향 기준으로 90도 보정
+         */
+
+        const carRotation =
+          angleFromXAxis +
+          90;
+
+
+        /*
+         * 과도하게 자동차가 기울어지는 것을 방지
+         */
+
+        return Math.max(
+          -24,
+          Math.min(
+            24,
+            carRotation
+          )
+        );
+      };
+
+
+    /* =========================================================
+       ORIGINAL CAR CENTER
+    ========================================================== */
+
     const naturalCarCenter =
       () => {
+
         if (
           !ego ||
           !road
@@ -1361,97 +1565,220 @@ if (titleArea) {
           return null;
         }
 
+
+        /*
+         * transform 제거 후
+         * CSS상의 원래 차량 중심을 측정
+         */
+
         ego.style.transition =
           "none";
+
 
         ego.style.transform =
           "none";
 
+
         void ego.offsetWidth;
 
-        const er =
-          ego.getBoundingClientRect();
 
-        const rr =
-          road.getBoundingClientRect();
+        const egoRect =
+          ego
+            .getBoundingClientRect();
+
+
+        const roadRect =
+          road
+            .getBoundingClientRect();
+
 
         return {
           x:
-            er.left -
-            rr.left +
-            er.width / 2,
+            egoRect.left -
+            roadRect.left +
+            egoRect.width / 2,
 
           y:
-            er.top -
-            rr.top +
-            er.height / 2
+            egoRect.top -
+            roadRect.top +
+            egoRect.height / 2
         };
       };
 
+
+    /* =========================================================
+       PLACE CAR EXACTLY ON PATH
+    ========================================================== */
+
     const placeCar = (
-      p,
-      center
+      progressValue,
+      naturalCenter
     ) => {
-      if (!ego) return;
-
-      const target =
-        pathPointLocal(p);
-
-      if (
-        !target ||
-        !center
-      ) {
-        return;
-      }
-
-      ego.style.transform =
-        `translate3d(` +
-        `${
-          target.x -
-          center.x
-        }px,` +
-        `${
-          target.y -
-          center.y
-        }px,` +
-        `0)`;
-    };
-
-    const resetCar = () => {
-      stopMotion();
 
       if (
         !ego ||
-        !path
+        !naturalCenter
       ) {
         return;
       }
 
-      const center =
-        naturalCarCenter();
 
-      placeCar(
-        0,
-        center
-      );
+      const target =
+        pathPointOnRoad(
+          progressValue
+        );
 
-      const len =
-        path.getTotalLength();
+
+      if (!target) {
+        return;
+      }
+
+
+      const dx =
+        target.x -
+        naturalCenter.x;
+
+
+      const dy =
+        target.y -
+        naturalCenter.y;
+
+
+      const angle =
+        pathAngleOnRoad(
+          progressValue
+        );
+
+
+      ego.style.transform =
+        `translate3d(` +
+        `${dx}px, ` +
+        `${dy}px, ` +
+        `0) ` +
+        `rotate(${angle}deg)`;
+    };
+
+
+    /* =========================================================
+       HIDE TRAJECTORY
+    ========================================================== */
+
+    const hidePath = () => {
+
+      if (!path) {
+        return;
+      }
+
+
+      const length =
+        pathLength();
+
 
       path.style.transition =
         "none";
 
+
       path.style.strokeDasharray =
-        `${len}`;
+        `${length}`;
+
 
       path.style.strokeDashoffset =
-        `${len}`;
+        `${length}`;
+
 
       path.style.opacity =
         "0";
     };
 
-    const drive = () => {
+
+    /* =========================================================
+       RESET CAR + PATH
+    ========================================================== */
+
+    const resetCarAndPath =
+      () => {
+
+        clearMotion();
+
+
+        if (
+          !ego ||
+          !path
+        ) {
+          return;
+        }
+
+
+        const center =
+          naturalCarCenter();
+
+
+        if (center) {
+          placeCar(
+            0,
+            center
+          );
+        }
+
+
+        hidePath();
+      };
+
+
+    /* =========================================================
+       REDUCED MOTION
+    ========================================================== */
+
+    const showStaticDrive =
+      () => {
+
+        if (
+          !ego ||
+          !path
+        ) {
+          return;
+        }
+
+
+        const center =
+          naturalCarCenter();
+
+
+        const length =
+          pathLength();
+
+
+        path.style.transition =
+          "none";
+
+
+        path.style.strokeDasharray =
+          `${length}`;
+
+
+        path.style.strokeDashoffset =
+          "0";
+
+
+        path.style.opacity =
+          "1";
+
+
+        if (center) {
+          placeCar(
+            1,
+            center
+          );
+        }
+      };
+
+
+    /* =========================================================
+       DRIVE ANIMATION
+    ========================================================== */
+
+    const runDrive = () => {
+
       if (
         !ego ||
         !path ||
@@ -1460,57 +1787,104 @@ if (titleArea) {
         return;
       }
 
-      stopMotion();
+
+      clearMotion();
+
 
       const center =
         naturalCarCenter();
 
-      if (!center) return;
+
+      const length =
+        pathLength();
+
+
+      if (
+        !center ||
+        !length
+      ) {
+        return;
+      }
+
+
+      /*
+       * 시작 위치는
+       * SVG path의 0% 위치와 정확히 동일
+       */
 
       placeCar(
         0,
         center
       );
 
-      const len =
-        path.getTotalLength();
 
-      // ============================================
-      // 속도 조절 핵심
-      // ============================================
+      /*
+       * 궤적을 먼저 생성한 뒤
+       * 자동차가 그 경로를 따라 이동
+       *
+       * 차량이 경로보다 먼저 튀어나가는 문제 방지
+       */
 
-      const DRAW = 1200;
+      const DRAW_DURATION =
+        1400;
 
-      const WAIT = 300;
 
-      const MOVE = 6200;
+      const WAIT_AFTER_DRAW =
+        350;
+
+
+      /*
+       * 차량 이동 시간을 충분히 길게 잡음
+       *
+       * 기존보다 느리고 자연스럽게 이동
+       */
+
+      const MOVE_DURATION =
+        7200;
+
 
       path.style.transition =
         "none";
 
+
       path.style.strokeDasharray =
-        `${len}`;
+        `${length}`;
+
 
       path.style.strokeDashoffset =
-        `${len}`;
+        `${length}`;
+
 
       path.style.opacity =
         "1";
 
+
+      /* =====================================================
+         1. PATH DRAW
+      ====================================================== */
+
       const drawStart =
         performance.now();
 
+
       const drawFrame =
         now => {
+
           const raw =
             Math.min(
               (
                 now -
                 drawStart
               ) /
-                DRAW,
+                DRAW_DURATION,
+
               1
             );
+
+
+          /*
+           * trajectory draw easing
+           */
 
           const eased =
             1 -
@@ -1519,421 +1893,744 @@ if (titleArea) {
               3
             );
 
+
           path.style.strokeDashoffset =
             `${
-              len *
-              (1 - eased)
+              length *
+              (
+                1 -
+                eased
+              )
             }`;
 
-          if (raw < 1) {
-            frame =
+
+          if (
+            raw < 1
+          ) {
+
+            animationFrame =
               requestAnimationFrame(
                 drawFrame
               );
 
+
             return;
           }
+
 
           path.style.strokeDashoffset =
             "0";
 
+
+          /* =================================================
+             2. WAIT
+          ================================================= */
+
           delayTimer =
-            setTimeout(
+            window.setTimeout(
               () => {
+
+                /* ============================================
+                   3. CAR MOVE
+                ============================================ */
+
                 const moveStart =
                   performance.now();
 
+
                 const moveFrame =
                   now2 => {
-                    const raw2 =
+
+                    const rawMove =
                       Math.min(
                         (
                           now2 -
                           moveStart
                         ) /
-                          MOVE,
+                          MOVE_DURATION,
+
                         1
                       );
 
-                    // 부드러운 가감속
-                    const p =
-                      -(
-                        Math.cos(
-                          Math.PI *
-                            raw2
-                        ) -
-                        1
-                      ) /
-                      2;
+
+                    /*
+                     * ease-in-out
+                     *
+                     * 출발할 때 천천히
+                     * 중앙에서는 조금 빠르게
+                     * 마지막에는 다시 감속
+                     */
+
+                    const easedMove =
+                      0.5 -
+                      0.5 *
+                      Math.cos(
+                        Math.PI *
+                        rawMove
+                      );
+
+
+                    /*
+                     * 차량 위치를
+                     * SVG path 위의 동일 비율 좌표에 위치
+                     */
 
                     placeCar(
-                      p,
+                      easedMove,
                       center
                     );
 
+
                     if (
-                      raw2 < 1
+                      rawMove < 1
                     ) {
-                      frame =
+
+                      animationFrame =
                         requestAnimationFrame(
                           moveFrame
                         );
                     }
                   };
 
-                frame =
+
+                animationFrame =
                   requestAnimationFrame(
                     moveFrame
                   );
+
               },
-              WAIT
+
+              WAIT_AFTER_DRAW
             );
         };
 
-      frame =
+
+      animationFrame =
         requestAnimationFrame(
           drawFrame
         );
     };
 
-    const staticDrive =
-      () => {
+
+    /* =========================================================
+       APPLY STAGE
+    ========================================================== */
+
+    const applyStage =
+      index => {
+
+        currentStage =
+          Math.max(
+            0,
+
+            Math.min(
+              index,
+              stages.length -
+                1
+            )
+          );
+
+
+        const stage =
+          stages[
+            currentStage
+          ];
+
+
+        clearMotion();
+
+
+        comparison.dataset.stage =
+          String(
+            currentStage
+          );
+
+
+        comparison.dataset.mode =
+          stage.mode;
+
+
+        /* =====================================================
+           SCENE VISIBILITY
+        ====================================================== */
+
+        const detectionVisible =
+          [
+            2,
+            3,
+            4,
+            5,
+
+            8,
+            9,
+            10,
+            11
+          ].includes(
+            currentStage
+          );
+
+
+        const predictionVisible =
+          [
+            3,
+            4,
+            5
+          ].includes(
+            currentStage
+          );
+
+
+        const candidatesVisible =
+          [
+            4,
+            5
+          ].includes(
+            currentStage
+          );
+
+
         if (
-          !ego ||
-          !path
+          blockedDetection
+        ) {
+          blockedDetection
+            .style.opacity =
+              detectionVisible
+                ? "1"
+                : "0";
+        }
+
+
+        if (
+          oncomingDetection
+        ) {
+          oncomingDetection
+            .style.opacity =
+              detectionVisible
+                ? "1"
+                : "0";
+        }
+
+
+        if (
+          predictionLabel
+        ) {
+          predictionLabel
+            .style.opacity =
+              predictionVisible
+                ? "1"
+                : "0";
+        }
+
+
+        if (
+          candidatePaths
+        ) {
+          candidatePaths
+            .style.opacity =
+              candidatesVisible
+                ? "1"
+                : "0";
+        }
+
+
+        /* =====================================================
+           TEXT UPDATE
+        ====================================================== */
+
+        if (phase) {
+          phase.textContent =
+            stage.phaseText;
+        }
+
+
+        if (title) {
+          title.textContent =
+            stage.titleText;
+        }
+
+
+        if (subtitle) {
+          subtitle.textContent =
+            stage.subtitleText;
+        }
+
+
+        if (caption) {
+          caption.textContent =
+            stage.captionText;
+        }
+
+
+        setSteps(
+          stage.steps,
+          stage.active
+        );
+
+
+        setReasoning(
+          stage.reason
+        );
+
+
+        updateControls();
+
+
+        /* =====================================================
+           VEHICLE
+        ====================================================== */
+
+        if (
+          stage.drive
+        ) {
+
+          if (
+            reducedMotion.matches
+          ) {
+
+            showStaticDrive();
+
+          } else {
+
+            runDrive();
+
+          }
+
+        } else {
+
+          resetCarAndPath();
+
+        }
+      };
+
+
+    /* =========================================================
+       AUTO PLAY
+    ========================================================== */
+
+    const scheduleAuto =
+      () => {
+
+        clearTimeout(
+          autoTimer
+        );
+
+
+        if (
+          !autoMode ||
+          !isVisible
         ) {
           return;
         }
 
-        const center =
-          naturalCarCenter();
 
-        const len =
-          path.getTotalLength();
+        autoTimer =
+          window.setTimeout(
+            () => {
 
-        path.style.strokeDasharray =
-          `${len}`;
+              if (
+                !autoMode ||
+                !isVisible
+              ) {
+                return;
+              }
 
-        path.style.strokeDashoffset =
-          "0";
 
-        path.style.opacity =
-          "1";
+              if (
+                currentStage <
+                stages.length -
+                  1
+              ) {
 
-        placeCar(
-          1,
-          center
-        );
-      };
+                applyStage(
+                  currentStage +
+                    1
+                );
 
-    const applyStage =
-      index => {
-        stage =
-          Math.max(
-            0,
-            Math.min(
-              index,
-              stages.length - 1
-            )
-          );
 
-        const s =
-          stages[stage];
+                scheduleAuto();
 
-        stopMotion();
 
-        comparison.dataset.stage =
-          String(stage);
+                return;
+              }
 
-        comparison.dataset.mode =
-          s.mode;
 
-        if (phase) {
-          phase.textContent =
-            s.ph;
-        }
+              /*
+               * 마지막 단계가 끝나면
+               * 잠깐 대기 후 처음으로 돌아감
+               */
 
-        if (title) {
-          title.textContent =
-            s.ti;
-        }
-
-        if (subtitle) {
-          subtitle.textContent =
-            s.sub;
-        }
-
-        if (caption) {
-          caption.textContent =
-            s.cap;
-        }
-
-        setSteps(
-          s.steps,
-          s.active
-        );
-
-        setReasoning(
-          s.reason
-        );
-
-        updateControls();
-
-        if (s.drive) {
-          reduced.matches
-            ? staticDrive()
-            : drive();
-        } else {
-          resetCar();
-        }
-      };
-
-    const schedule = () => {
-      clearTimeout(
-        autoTimer
-      );
-
-      if (
-        !auto ||
-        !visible
-      ) {
-        return;
-      }
-
-      autoTimer =
-        setTimeout(
-          () => {
-            if (
-              !auto ||
-              !visible
-            ) {
-              return;
-            }
-
-            if (
-              stage <
-              stages.length - 1
-            ) {
-              applyStage(
-                stage + 1
-              );
-
-              schedule();
-            } else {
               loopTimer =
-                setTimeout(
+                window.setTimeout(
                   () => {
+
                     if (
-                      !auto ||
-                      !visible
+                      !autoMode ||
+                      !isVisible
                     ) {
                       return;
                     }
 
-                    applyStage(0);
 
-                    schedule();
+                    applyStage(
+                      0
+                    );
+
+
+                    scheduleAuto();
+
                   },
-                  1200
+
+                  1400
                 );
-            }
-          },
-          hold[stage] ||
-            2000
-        );
-    };
+
+            },
+
+            stageHold[
+              currentStage
+            ] ?? 2200
+          );
+      };
+
 
     const startAuto =
       () => {
-        stopAuto();
 
-        stopMotion();
+        clearAutoTimers();
 
-        auto = true;
+        clearMotion();
 
-        applyStage(0);
 
-        schedule();
-      };
+        autoMode = true;
 
-    const manual =
-      () => {
-        auto = false;
-
-        stopAuto();
-
-        stopMotion();
-      };
-
-    prev?.addEventListener(
-      "click",
-      () => {
-        manual();
 
         applyStage(
-          stage - 1
+          0
         );
-      }
-    );
 
-    next?.addEventListener(
-      "click",
+
+        scheduleAuto();
+      };
+
+
+    /* =========================================================
+       MANUAL MODE
+    ========================================================== */
+
+    const enterManualMode =
       () => {
-        manual();
 
-        applyStage(
-          stage + 1
-        );
-      }
-    );
+        autoMode = false;
 
-    replay?.addEventListener(
-      "click",
-      () => {
-        played = true;
 
-        startAuto();
-      }
-    );
+        clearAutoTimers();
+
+
+        clearMotion();
+      };
+
+
+    /* =========================================================
+       PREVIOUS
+    ========================================================== */
+
+    prevButton
+      ?.addEventListener(
+        "click",
+        () => {
+
+          enterManualMode();
+
+
+          applyStage(
+            currentStage -
+              1
+          );
+        }
+      );
+
+
+    /* =========================================================
+       NEXT
+    ========================================================== */
+
+    nextButton
+      ?.addEventListener(
+        "click",
+        () => {
+
+          enterManualMode();
+
+
+          applyStage(
+            currentStage +
+              1
+          );
+        }
+      );
+
+
+    /* =========================================================
+       REPLAY
+    ========================================================== */
+
+    replayButton
+      ?.addEventListener(
+        "click",
+        () => {
+
+          hasPlayed = true;
+
+
+          startAuto();
+        }
+      );
+
+
+    /* =========================================================
+       KEYBOARD CONTROL
+    ========================================================== */
 
     comparison.addEventListener(
       "keydown",
-      e => {
+      event => {
+
         if (
-          e.key ===
+          event.key ===
           "ArrowLeft"
         ) {
-          e.preventDefault();
 
-          manual();
+          event.preventDefault();
+
+
+          enterManualMode();
+
 
           applyStage(
-            stage - 1
+            currentStage -
+              1
           );
         }
 
+
         if (
-          e.key ===
+          event.key ===
           "ArrowRight"
         ) {
-          e.preventDefault();
 
-          manual();
+          event.preventDefault();
+
+
+          enterManualMode();
+
 
           applyStage(
-            stage + 1
+            currentStage +
+              1
           );
         }
       }
     );
 
-    if (reduced.matches) {
-      visible = true;
+
+    /* =========================================================
+       START ON VIEW
+    ========================================================== */
+
+    if (
+      reducedMotion.matches
+    ) {
+
+      isVisible = true;
+
 
       applyStage(
-        stages.length - 1
+        stages.length -
+          1
       );
+
     } else if (
       "IntersectionObserver" in
       window
     ) {
+
       new IntersectionObserver(
         entries => {
-          visible =
-            entries[0]
-              .isIntersecting;
+
+          const nowVisible =
+            Boolean(
+              entries[0]
+                ?.isIntersecting
+            );
+
+
+          isVisible =
+            nowVisible;
+
+
+          /*
+           * 처음 화면에 들어왔을 때만
+           * 자동재생 시작
+           */
 
           if (
-            visible &&
-            !played
+            nowVisible &&
+            !hasPlayed
           ) {
-            played = true;
+
+            hasPlayed = true;
+
 
             startAuto();
-          } else if (
-            !visible
-          ) {
-            stopAuto();
 
-            stopMotion();
+
+            return;
+          }
+
+
+          /*
+           * 자동재생 중 화면 밖으로 나갔다가
+           * 다시 들어온 경우 현재 단계부터 재개
+           */
+
+          if (
+            nowVisible &&
+            hasPlayed &&
+            autoMode
+          ) {
+
+            applyStage(
+              currentStage
+            );
+
+
+            scheduleAuto();
+
+
+            return;
+          }
+
+
+          /*
+           * 화면 밖에서는 애니메이션 중지
+           */
+
+          if (
+            !nowVisible
+          ) {
+
+            clearAutoTimers();
+
+
+            clearMotion();
           }
         },
         {
-          threshold: 0.3
+          threshold: 0.28
         }
       ).observe(
         comparison
       );
+
     } else {
-      visible = true;
-      played = true;
+
+      isVisible = true;
+
+      hasPlayed = true;
+
 
       startAuto();
     }
 
-    let resizeTimer = 0;
 
-    addEventListener(
+    /* =========================================================
+       RESPONSIVE RESIZE
+    ========================================================== */
+
+    window.addEventListener(
       "resize",
       () => {
+
         clearTimeout(
           resizeTimer
         );
 
+
         resizeTimer =
-          setTimeout(
+          window.setTimeout(
             () => {
-              if (!visible) {
-                return;
-              }
 
-              const wasAuto =
-                auto;
+              const resumeAuto =
+                autoMode;
 
-              stopAuto();
 
-              stopMotion();
+              clearAutoTimers();
+
+
+              clearMotion();
+
+
+              /*
+               * 화면 크기가 바뀌면
+               * SVG 좌표와 차량 위치를 다시 계산
+               */
 
               applyStage(
-                stage
+                currentStage
               );
 
-              if (wasAuto) {
-                auto = true;
 
-                schedule();
+              if (
+                resumeAuto &&
+                isVisible
+              ) {
+
+                autoMode = true;
+
+
+                scheduleAuto();
               }
+
             },
-            220
+
+            180
           );
+      },
+      {
+        passive: true
       }
     );
 
-    if (!reduced.matches) {
-      applyStage(0);
+
+    /*
+     * 최초 화면
+     */
+
+    if (
+      !reducedMotion.matches
+    ) {
+      applyStage(
+        0
+      );
     }
+
   }
 
-  if (reduced.matches) {
-    consoleEl?.classList.add(
-      "running"
-    );
 
-    sensorStage?.classList.add(
-      "playing",
-      "reduced"
-    );
+  /* =========================================================
+     YEAR
+  ========================================================== */
 
-    vlaLive?.classList.add(
-      "playing",
-      "reduced"
-    );
-  }
+  const year = q(
+    "#year"
+  );
 
-  const year = q("#year");
 
   if (year) {
     year.textContent =
-      new Date().getFullYear();
+      String(
+        new Date()
+          .getFullYear()
+      );
   }
+
 })();

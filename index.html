@@ -1,65 +1,1568 @@
 <!doctype html>
 <html lang="ko">
+
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="NVIDIA Alpamayo를 중심으로 살펴보는 추론 기반 자율주행 AI">
-  <title>Road / Reason — NVIDIA Alpamayo</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <meta
+    name="description"
+    content="NVIDIA Alpamayo를 중심으로 살펴보는 추론 기반 자율주행 AI와 Vision-Language-Action 모델"
+  >
+
+  <title>
+    Road / Reason — NVIDIA Alpamayo
+  </title>
+
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com"
+  >
+
+  <link
+    rel="preconnect"
+    href="https://fonts.gstatic.com"
+    crossorigin
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+    rel="stylesheet"
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
 </head>
+
 <body>
-  <a class="skip" href="#main">본문으로 바로가기</a><div class="progress"><i id="progress"></i></div>
-  <header id="header"><nav><a class="brand" href="#intro"><b></b>ROAD/<em>REASON</em></a><div class="team-credit"><strong>미래첨단기술이해 1</strong><span>4조 · 김건우 · 김규민 · 김승현 · 김정후 · 김주안</span></div><button id="menu" aria-expanded="false" aria-controls="links" aria-label="메뉴 열기"><i></i><i></i></button><div id="links"><a href="#intro" data-nav="intro">소개</a><a href="#tech" data-nav="tech">핵심 개념</a><a href="#difference" data-nav="difference">비교</a><a href="#alpamayo" data-nav="alpamayo">ALPAMAYO</a><a href="#simulation" data-nav="simulation">개발 흐름</a><a href="#safety" data-nav="safety">안전</a></div></nav></header>
+
+  <a
+    class="skip"
+    href="#main"
+  >
+    본문으로 바로가기
+  </a>
+
+  <div
+    class="progress"
+    aria-hidden="true"
+  >
+    <i id="progress"></i>
+  </div>
+
+
+  <!-- =========================================================
+       HEADER
+  ========================================================== -->
+
+  <header id="header">
+
+    <nav>
+
+      <a
+        class="brand"
+        href="#intro"
+        aria-label="Road Reason 처음으로"
+      >
+        <b></b>
+        ROAD/<em>REASON</em>
+      </a>
+
+      <div class="team-credit">
+        <strong>
+          미래첨단기술이해 1
+        </strong>
+
+        <span>
+          4조 · 김건우 · 김규민 · 김승현 · 김정후 · 김주안
+        </span>
+      </div>
+
+      <button
+        id="menu"
+        type="button"
+        aria-expanded="false"
+        aria-controls="links"
+        aria-label="메뉴 열기"
+      >
+        <i></i>
+        <i></i>
+      </button>
+
+      <div id="links">
+
+        <a
+          href="#intro"
+          data-nav="intro"
+        >
+          소개
+        </a>
+
+        <a
+          href="#tech"
+          data-nav="tech"
+        >
+          핵심 개념
+        </a>
+
+        <a
+          href="#difference"
+          data-nav="difference"
+        >
+          비교
+        </a>
+
+        <a
+          href="#alpamayo"
+          data-nav="alpamayo"
+        >
+          ALPAMAYO
+        </a>
+
+        <a
+          href="#simulation"
+          data-nav="simulation"
+        >
+          개발 흐름
+        </a>
+
+        <a
+          href="#safety"
+          data-nav="safety"
+        >
+          안전
+        </a>
+
+      </div>
+
+    </nav>
+
+  </header>
+
+
   <main id="main">
-    <section class="hero" id="intro" data-section="intro"><div class="grid-bg"></div><div class="wrap hero-grid"><div class="reveal"><p class="kicker">01 — REASONING-BASED AUTONOMOUS DRIVING</p><h1>도로 위의<br><span>AI 추론</span></h1><p class="lead">자율주행은 이제 도로를 보는 것을 넘어,<br>복잡한 상황을 이해하고 다음 행동을 추론하는 단계로 나아갑니다.</p><a class="explore" href="#alpamayo">ALPAMAYO 살펴보기 →</a></div><div class="hud reveal" role="img" aria-label="자율주행 차량의 센서와 AI 추론 화면"><div class="hudbar"><span>SYS // ONLINE</span><span>REASONING ACTIVE</span></div><div class="radar"><i></i><i></i><i></i><div class="scan"></div><div class="axis x"></div><div class="axis y"></div><div class="car"><b></b></div><span class="cam">MULTI-CAMERA</span><span class="rad">CONTEXT</span><span class="lid">TRAJECTORY</span><span class="ai">VLA REASONING</span><b class="dot d1"></b><b class="dot d2"></b></div><div class="hudbar"><span>CAUSAL TRACE // READY</span><span>LATENCY 12MS</span></div></div></div><div class="hero-foot"><span>OPEN VLA</span><span>SCROLL TO EXPLORE</span><span>PHYSICAL AI</span></div></section>
 
-    <section id="tech" data-section="tech"><div class="wrap"><header class="section-head reveal"><p class="kicker">02 — WHY REASONING</p><div><h2>인식에서<br><em>추론으로</em></h2><p>예측하기 어려운 실제 도로에서는 객체를 감지하는 것만으로 충분하지 않습니다. 차량은 장면의 맥락과 다른 참여자의 의도를 함께 고려해야 합니다.</p></div></header><div class="flow reveal"><article><span>01 / VISION</span><div class="icon perceive"></div><h3>주변을 본다</h3><p>멀티카메라 영상과 주행 맥락으로 차량, 보행자, 차선, 신호를 파악합니다.</p></article><i>→</i><article><span>02 / REASONING</span><div class="icon plan"></div><h3>이유를 추론한다</h3><p>롱테일 상황에서 가능한 행동을 비교하고, 결정의 근거를 인과 추론 트레이스로 만듭니다.</p></article><i>→</i><article><span>03 / ACTION</span><div class="icon control"></div><h3>안전하게 움직인다</h3><p>추론 결과를 궤적으로 생성해 차량 제어로 연결하고 계속 갱신합니다.</p></article></div></div></section>
 
-    <section class="road-compare" id="difference" data-section="difference" aria-labelledby="difference-title"><div class="wrap"><header class="center reveal"><p class="kicker">05 — 같은 행동, 다른 판단 과정</p><h2 id="difference-title">같은 도로,<br><em>다른 판단</em></h2><p>같은 주행 결과에 도달할 수 있지만, 상황을 해석하고 행동을 결정하는 구조는 다릅니다.</p></header>
-      <div class="compare-playground legacy-comparison reveal" id="legacy-comparison" aria-hidden="true">
-        <p class="comparison-current" id="comparison-current" aria-live="polite">서로 다른 판단 구조 · 같은 안전 주행 예시</p>
-        <div class="comparison-tabs" role="tablist" aria-label="비교 애니메이션 선택"><button type="button" class="comparison-tab active" data-comparison-view="both" role="tab" aria-selected="true">동시 비교</button><button type="button" class="comparison-tab" data-comparison-view="conventional" role="tab" aria-selected="false">기존 시스템</button><button type="button" class="comparison-tab" data-comparison-view="reasoning" role="tab" aria-selected="false">AI 추론</button></div>
-        <article class="compare-side conventional-side"><header><b>기존 시스템</b><span>모듈형 판단</span></header><div class="reasoning-layout conventional-layout"><div class="top-road"><div class="lane-edge left-edge"></div><div class="lane-edge right-edge"></div><div class="center-line"></div><div class="direction">↑ 진행</div><div class="top-car oncoming"><i></i><span>반대 차량</span></div><div class="top-car parked"><i></i><span>장애물</span></div><div class="top-car my-car"><i></i><span>내 차 ↑</span></div><div class="detect blocked-detect">장애물 감지</div><div class="detect oncoming-detect">반대 차량 감지</div><div class="road-status stop-status">정지<small>대기</small></div><div class="pipeline"><span>감지</span><i>→</i><span>예측</span><i>→</i><span>계획</span></div></div><aside class="conventional-progress"><b class="progress-title">진행 상황</b><ol class="progress-list"><li>전진</li><li>장애물 감지</li><li>반대 차량 감지</li><li>감속</li><li>정지</li><li>대기</li></ol></aside></div><p class="side-note">개념 설명용 모듈형 주행</p><div class="result-card"><b>보수적으로 정지</b><span>안전 상태 유지</span></div></article>
-        <article class="compare-side reasoning-side"><header><b>추론 AI</b><span>NVIDIA ALPAMAYO</span></header><div class="reasoning-layout"><div class="top-road"><div class="lane-edge left-edge"></div><div class="lane-edge right-edge"></div><div class="center-line"></div><div class="direction">↑ 진행</div><div class="top-car oncoming"><i></i><span>반대 차량</span></div><div class="top-car parked"><i></i><span>장애물</span></div><svg class="maneuver-path" viewBox="0 0 320 430" preserveAspectRatio="none" aria-hidden="true"><path d="M240 361 C240 340 238 330 236 326 C205 295 165 275 144 271 C140 230 140 190 144 161 C150 135 160 118 161 116 C175 108 198 98 210 96 C222 93 233 92 240 91"/></svg><div class="top-car my-car"><i></i><span>내 차 ↑</span></div><div class="detect blocked-detect">장애물 감지</div><div class="detect oncoming-detect">반대 차량 감지</div><div class="reason-state">상황 분석<br><small>주변을 살피는 중</small></div><div class="safe-gap-label">안전 공간 확인</div></div><aside class="reasoning-progress"><b class="progress-title">진행 상황</b><div class="reasoning-ui"><b>인식</b><span>진행 차로가 막힘</span><i>↓</i><b>추론</b><span>반대 차량이 접근 중</span><i>↓</i><b>대기</b><span>안전한 공간을 기다림</span><strong>행동 · 안전한 경로 생성</strong></div><div class="causal-trace"><b>판단 과정</b><span data-trace="scene">상황 &nbsp; 앞 차로가 막힘</span><span data-trace="observation">관찰 &nbsp; 반대 차량을 감지</span><span data-trace="reason">추론 &nbsp; 지금 지나가면 충돌 위험</span><span data-trace="decision">결정 &nbsp; 안전한 공간까지 대기</span><span data-trace="action">행동 &nbsp; 장애물 통과 후 차로 복귀</span></div></aside></div><div class="result-card"><b>추론한 주행 경로</b><span>대기 · 판단 · 안전 경로</span></div></article>
-      </div>
-      <div class="comparison-v2 legacy-comparison-v2 reveal" id="legacy-comparison-v2" aria-hidden="true">
-        <div class="comparison-v2-head"><span class="comparison-v2-kicker">SAME SCENE / DIFFERENT LOGIC</span><p id="comparison-v2-status">같은 도로 상황 · 판단 구조를 비교합니다</p></div>
-        <div class="comparison-v2-grid">
-          <article class="v2-panel v2-modular">
-            <header><div><h3>MODULAR STACK</h3><p>Conventional autonomy</p></div><span class="v2-tag">PREDICTION-BASED</span></header>
-            <div class="v2-scene"><div class="v2-road"><i class="v2-lane-center"></i><span class="v2-road-label">SAME SCENARIO</span><div class="v2-vehicle v2-ego">MY CAR</div><div class="v2-vehicle v2-blocked">BLOCKED</div><div class="v2-vehicle v2-oncoming">ONCOMING</div><b class="v2-detection v2-detection-blocked">OBJECT 01 · BLOCKED</b><b class="v2-detection v2-detection-oncoming">OBJECT 02 · ONCOMING</b><svg class="v2-trajectory" viewBox="0 0 320 560" preserveAspectRatio="none" aria-hidden="true"><path d="M240 482 C240 445 238 410 230 378 C215 340 180 315 154 292 C145 255 145 220 150 190 C158 155 175 132 195 120 C212 108 228 100 240 92 C240 55 240 10 240 -45"/></svg></div></div>
-            <div class="v2-process"><b>MODULAR PIPELINE</b><ol><li>PERCEPTION</li><li>PREDICTION</li><li>PLANNING</li><li>CONTROL</li></ol></div>
-            <p class="v2-caption">Objects are detected, motion is predicted, and a safe path is planned under constraints.</p>
-          </article>
-          <article class="v2-panel v2-reasoning">
-            <header><div><h3>REASONING VLA</h3><p>NVIDIA Alpamayo</p></div><span class="v2-tag">CONTEXT-AWARE</span></header>
-            <div class="v2-scene"><div class="v2-road"><i class="v2-lane-center"></i><span class="v2-road-label">SAME SCENARIO</span><div class="v2-vehicle v2-ego">MY CAR</div><div class="v2-vehicle v2-blocked">BLOCKED</div><div class="v2-vehicle v2-oncoming">ONCOMING</div><b class="v2-detection v2-detection-blocked">LANE PARTIALLY BLOCKED</b><b class="v2-detection v2-detection-oncoming">ONCOMING VEHICLE</b><svg class="v2-trajectory" viewBox="0 0 320 560" preserveAspectRatio="none" aria-hidden="true"><path d="M240 482 C240 450 238 425 236 410 C205 370 165 330 144 315 C140 280 140 240 144 220 C150 185 160 160 179 150 C200 135 220 120 240 110 C240 70 240 20 240 -45"/></svg></div></div>
-            <div class="v2-process"><b>CHAIN-OF-CAUSATION TRACE</b><ol><li>SCENE UNDERSTANDING <small>Lane blocked ahead</small></li><li>CAUSAL REASONING <small>Enough clearance to pass?</small></li><li>ACTION DECISION <small>Proceed with caution</small></li><li>TRAJECTORY OUTPUT <small>Generate passing path</small></li></ol></div>
-            <p class="v2-caption">The scene, context, and causal relationships are connected to the action decision.</p>
-          </article>
+    <!-- =========================================================
+         01 — INTRO
+    ========================================================== -->
+
+    <section
+      class="hero"
+      id="intro"
+      data-section="intro"
+    >
+
+      <div class="grid-bg"></div>
+
+      <div class="wrap hero-grid">
+
+        <div class="reveal">
+
+          <p class="kicker">
+            01 — REASONING-BASED AUTONOMOUS DRIVING
+          </p>
+
+          <h1>
+            도로 위의<br>
+            <span>AI 추론</span>
+          </h1>
+
+          <p class="lead">
+            자율주행 AI는 도로를 인식하는 것을 넘어,<br>
+            복잡한 상황의 관계와 맥락을 이해하고
+            다음 행동을 추론하는 방향으로 발전하고 있습니다.
+          </p>
+
+          <a
+            class="explore"
+            href="#alpamayo"
+          >
+            ALPAMAYO 살펴보기 →
+          </a>
+
         </div>
-        <div class="comparison-v2-summary"><span>Different reasoning architecture.</span><b>Potentially similar driving action.</b></div>
-        <button class="replay-button v2-replay" id="comparison-v2-replay" type="button">↻ REPLAY</button>
+
+
+        <div
+          class="hud reveal"
+          role="img"
+          aria-label="자율주행 차량이 주변 환경을 인식하고 추론하는 개념적 인터페이스"
+        >
+
+          <div class="hudbar">
+            <span>
+              SYS // ONLINE
+            </span>
+
+            <span>
+              REASONING ACTIVE
+            </span>
+          </div>
+
+
+          <div class="radar">
+
+            <i></i>
+            <i></i>
+            <i></i>
+
+            <div class="scan"></div>
+
+            <div class="axis x"></div>
+            <div class="axis y"></div>
+
+            <div class="car">
+              <b></b>
+            </div>
+
+            <span class="cam">
+              MULTI-CAMERA
+            </span>
+
+            <span class="rad">
+              CONTEXT
+            </span>
+
+            <span class="lid">
+              TRAJECTORY
+            </span>
+
+            <span class="ai">
+              VLA REASONING
+            </span>
+
+            <b class="dot d1"></b>
+            <b class="dot d2"></b>
+
+          </div>
+
+
+          <div class="hudbar">
+
+            <span>
+              COC TRACE // READY
+            </span>
+
+            <span>
+              TRAJECTORY // READY
+            </span>
+
+          </div>
+
+        </div>
+
       </div>
-      <div class="comparison-unified reveal" id="comparison-unified">
-        <header class="unified-head"><span>같은 도로 / 같은 행동</span><h3 id="unified-title">같은 주행 상황</h3><p id="unified-subtitle">같은 장면에서 판단 과정이 어떻게 달라지는지 보여줍니다.</p></header>
-        <div class="unified-controls" role="group" aria-label="판단 시스템 선택"><button type="button" class="unified-system active" data-unified-mode="modular">기존 시스템</button><button type="button" class="unified-system" data-unified-mode="reasoning">알파마요</button><button class="unified-previous" id="unified-previous" type="button">이전 단계</button><button class="unified-next" id="unified-next" type="button">다음 단계</button></div>
-        <div class="unified-layout"><div class="unified-scene"><div class="v2-road"><i class="v2-lane-center"></i><span class="v2-road-label">SAME SCENARIO</span><div class="v2-vehicle v2-ego">MY CAR</div><div class="v2-vehicle v2-blocked">BLOCKED</div><div class="v2-vehicle v2-oncoming">ONCOMING</div><b class="v2-detection v2-detection-blocked">VEHICLE / OBSTACLE</b><b class="v2-detection v2-detection-oncoming">ONCOMING VEHICLE</b><svg class="v2-trajectory" viewBox="0 0 320 560" preserveAspectRatio="none" aria-hidden="true"><path d="M240 482 C240 445 238 410 230 378 C215 340 180 315 154 292 C145 255 145 220 150 190 C158 155 175 132 195 120 C212 108 228 100 240 92 C240 55 240 10 240 -45"/></svg></div></div><aside class="unified-logic"><b id="unified-phase">SCENARIO</b><p id="unified-caption">Ego vehicle approaches a partially blocked lane.</p><ol class="unified-steps"><li>PERCEPTION</li><li>PREDICTION</li><li>PLANNING</li><li>CONTROL</li></ol><div class="unified-reasoning" aria-live="polite"></div></aside></div>
-        <div class="unified-summary"><strong>같은 행동</strong><span>다른 판단 과정</span></div><button class="replay-button unified-replay" id="unified-replay" type="button">↻ 다시 시작</button><p class="comparison-note unified-note">기존 시스템과 알파마요 모두 같은 궤적을 선택할 수 있습니다. 차이는 상황을 해석하고 행동을 결정하는 과정에 있습니다.<small>본 시뮬레이션은 개념적 차이를 설명하기 위한 예시이며, 실제 시스템의 성능 또는 안전성을 비교한 결과가 아닙니다.</small></p>
+
+
+      <div class="hero-foot">
+        <span>OPEN VLA</span>
+        <span>SCROLL TO EXPLORE</span>
+        <span>PHYSICAL AI</span>
       </div>
-    </div></section>
 
-    <section class="dark" id="limits" data-section="tech"><div class="wrap"><header class="split reveal"><div><p class="kicker">04 — LONG-TAIL SCENARIOS</p><h2>도로의 예외는<br><em>끝이 없습니다.</em></h2></div><div><p>공사 구간, 예기치 않은 보행자, 불규칙한 교통 흐름처럼 드문 상황은 자율주행 개발의 중요한 과제입니다.</p><p>추론 기반 접근은 장면을 단순 분류하는 대신, <strong>무슨 일이 일어나고 있고 다음에 무엇이 안전한지</strong>를 판단하는 데 초점을 둡니다.</p></div></header><div class="scenarios reveal"><article><b>01</b><i>↗</i><h3>공사 구간</h3><p>임시 차선과 표지</p></article><article><b>02</b><i>↗</i><h3>정차 차량</h3><p>막힌 진행 차로</p></article><article><b>03</b><i>↗</i><h3>보행자</h3><p>예측하기 어려운 이동</p></article><article><b>04</b><i>↗</i><h3>복잡한 교차로</h3><p>다수의 우선순위</p></article><article><b>05</b><i>↗</i><h3>악천후</h3><p>제한된 관측 조건</p></article><article><b>06</b><i>!</i><h3>새로운 상황</h3><p>훈련 데이터 밖의 조합</p></article></div></div></section>
+    </section>
 
-    <section id="alpamayo" class="alpa" data-section="alpamayo"><div class="wrap"><p class="kicker reveal">04 — CASE STUDY / NVIDIA</p><header class="alpa-title reveal"><p>OPEN VLA MODELS, FRAMEWORKS<br>AND DATASETS FOR AUTONOMOUS DRIVING</p><h2><small>NVIDIA 사례</small>ALPAMAYO</h2></header><div class="alpa-body reveal"><p>NVIDIA Alpamayo는 <strong>오픈 VLA 모델, 시뮬레이션 프레임워크, 피지컬 AI 데이터셋</strong>으로 구성된 자율주행 개발 제품군입니다. NVIDIA Cosmos를 기반으로, 드문 주행 상황을 추론하고 결정의 근거를 해석·감사 가능한 형태로 만듭니다.</p><div><article><b>01</b><h3>오픈 VLA 모델</h3><p>영상·내비게이션·주행 맥락에서 궤적과 인과 추론을 생성합니다.</p></article><article><b>02</b><h3>투명한 추론</h3><p>차량이 특정 동작을 택한 이유를 언어화해 검토할 수 있습니다.</p></article><article><b>03</b><h3>폐쇄 루프 검증</h3><p>시뮬레이션 안에서 모델의 행동을 반복적으로 시험합니다.</p></article><article><b>04</b><h3>확장 가능한 생태계</h3><p>모델, 데이터, 학습과 검증 도구를 연결해 개발을 지원합니다.</p></article></div></div><aside class="notice reveal"><b>IMPORTANT CONTEXT</b><p>Alpamayo는 자율주행 개발을 위한 오픈 연구·개발 제품군입니다. 실제 차량 배포에는 별도의 안전 검증, 규제 요건 충족, 시스템 중복 설계와 운영 절차가 필요합니다.</p></aside></div></section>
 
-    <section class="dark" id="simulation" data-section="simulation"><div class="wrap"><header class="section-head reveal"><p class="kicker">05 — DEVELOPMENT LOOP</p><div><h2>데이터에서<br><em>검증까지</em></h2><p>Alpamayo 포트폴리오는 데이터 준비부터 모델 학습, 시뮬레이션, 차량 내 배포까지 하나의 개발 흐름을 제시합니다.</p></div></header><div class="console reveal" id="console"><div class="logs"><header><b>ALPAMAYO PIPELINE</b><span>PROCESSING</span></header><ol><li><b>01</b><div><h3>데이터 및 레이블</h3><p>실제 주행 데이터와 인과 추론 레이블을 준비합니다.</p></div><i>DATA</i></li><li><b>02</b><div><h3>모델 학습·후학습</h3><p>AlpaGym 기반 폐쇄 루프 강화 학습으로 최적화합니다.</p></div><i>RL</i></li><li><b>03</b><div><h3>시뮬레이션·검증</h3><p>AlpaSim에서 실제 배포 전 모델 행동을 검증합니다.</p></div><i>SIM</i></li><li><b>04</b><div><h3>차량 내 적용</h3><p>검증된 프로세스를 통해 차량 내 추론으로 전환합니다.</p></div><i>DRIVE</i></li></ol></div></div></div></section>
+    <!-- =========================================================
+         02 — WHY REASONING
+    ========================================================== -->
 
-    <section id="safety" data-section="safety"><div class="wrap"><header class="split reveal"><div><p class="kicker">06 — TRUST & SAFETY</p><h2>설명할 수 있는<br><em>자율주행</em></h2></div><div><p>안전한 자율주행은 높은 모델 성능만으로 완성되지 않습니다. 판단의 근거를 검토하고, 다양한 조건에서 행동을 검증할 수 있어야 합니다.</p><p class="lime">투명성, 재현성, 신뢰성은 안전한 개발의 중요한 기반입니다.</p></div></header><div class="risks reveal"><article><b>01</b><h3>해석 가능성</h3><p>결정 근거의 검토</p></article><article><b>02</b><h3>재현성</h3><p>동일 조건의 반복 시험</p></article><article><b>03</b><h3>시뮬레이션</h3><p>엣지 케이스 검증</p></article><article><b>04</b><h3>데이터 품질</h3><p>현실을 반영한 학습</p></article><article><b>05</b><h3>규제 대응</h3><p>지역별 요건 고려</p></article><article><b>06</b><h3>차량 검증</h3><p>배포 전 체계적 평가</p></article></div></div></section>
+    <section
+      id="tech"
+      data-section="tech"
+    >
 
-    <section class="future" id="future"><div class="grid-bg"></div><div class="wrap"><p class="kicker reveal">07 — NEXT STEP</p><h2 class="reveal">오픈 모델에서<br><span>현실의 도로로,</span><br><em>함께 검증하며.</em></h2><div class="future-copy reveal"><p>Alpamayo는 OEM, 티어 1, 스타트업, 연구진이 기반 AI를 처음부터 다시 만들기보다 각자의 차별화에 집중하도록 돕는 것을 목표로 합니다.</p><p>오픈 모델과 데이터, 시뮬레이션을 연결한 개발 방식은 <strong>추론 기반 레벨 4 자율주행</strong>을 향한 경로를 가속합니다.</p></div></div></section>
-    <section class="refs" id="references"><div class="wrap"><header class="section-head reveal"><p class="kicker">08 — REFERENCES</p><div><h2>참고 자료</h2></div></header><div class="ref-list reveal"><a href="https://www.nvidia.com/ko-kr/solutions/autonomous-vehicles/alpamayo/" target="_blank" rel="noopener noreferrer"><b>01</b><span>NVIDIA Alpamayo<small>오픈 VLA 모델, 프레임워크 및 데이터셋</small></span><i>→</i></a><a href="https://github.com/NVIDIA/Alpamayo" target="_blank" rel="noopener noreferrer"><b>02</b><span>Alpamayo Model Family<small>모델 제품군과 개발 리소스</small></span><i>→</i></a><a href="https://huggingface.co/nvidia" target="_blank" rel="noopener noreferrer"><b>03</b><span>NVIDIA on Hugging Face<small>오픈 모델과 데이터셋</small></span><i>→</i></a></div><p class="disclaimer">본 페이지는 NVIDIA Alpamayo 소개 페이지를 바탕으로 제작한 교육용 기술 개요입니다. NVIDIA의 공식 제품 페이지가 아닙니다.</p></div></section>
+      <div class="wrap">
+
+        <header class="section-head reveal">
+
+          <p class="kicker">
+            02 — WHY REASONING
+          </p>
+
+          <div>
+
+            <h2>
+              인식에서<br>
+              <em>추론으로</em>
+            </h2>
+
+            <p>
+              실제 도로에는 학습 데이터에서 자주 보지 못한
+              복잡하고 예외적인 상황이 존재합니다.
+              따라서 차량은 객체를 감지하는 것뿐 아니라
+              도로 공간, 주변 참여자의 움직임,
+              주행 맥락을 함께 고려해야 합니다.
+            </p>
+
+          </div>
+
+        </header>
+
+
+        <div class="flow reveal">
+
+          <article>
+
+            <span>
+              01 / PERCEPTION
+            </span>
+
+            <div class="icon perceive"></div>
+
+            <h3>
+              주변을 인식한다
+            </h3>
+
+            <p>
+              카메라와 주행 입력을 통해
+              차량, 보행자, 차선,
+              신호와 도로 구조를 파악합니다.
+            </p>
+
+          </article>
+
+
+          <i aria-hidden="true">
+            →
+          </i>
+
+
+          <article>
+
+            <span>
+              02 / REASONING
+            </span>
+
+            <div class="icon plan"></div>
+
+            <h3>
+              관계를 추론한다
+            </h3>
+
+            <p>
+              장면의 맥락과 객체 사이의 관계를 바탕으로
+              가능한 행동과 그 결과를 판단합니다.
+            </p>
+
+          </article>
+
+
+          <i aria-hidden="true">
+            →
+          </i>
+
+
+          <article>
+
+            <span>
+              03 / ACTION
+            </span>
+
+            <div class="icon control"></div>
+
+            <h3>
+              행동으로 연결한다
+            </h3>
+
+            <p>
+              판단한 결과를 주행 궤적으로 생성하고
+              차량의 다음 움직임으로 연결합니다.
+            </p>
+
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         03 — LONG-TAIL SCENARIOS
+    ========================================================== -->
+
+    <section
+      class="dark"
+      id="limits"
+      data-section="tech"
+    >
+
+      <div class="wrap">
+
+        <header class="split reveal">
+
+          <div>
+
+            <p class="kicker">
+              03 — LONG-TAIL SCENARIOS
+            </p>
+
+            <h2>
+              도로의 예외는<br>
+              <em>끝이 없습니다.</em>
+            </h2>
+
+          </div>
+
+
+          <div>
+
+            <p>
+              공사 구간, 예상하지 못한 보행자의 움직임,
+              비정형적인 교통 흐름처럼
+              드물지만 중요한 상황은
+              자율주행 개발의 핵심 과제입니다.
+            </p>
+
+            <p>
+              추론 기반 접근은 단순한 객체 분류를 넘어
+              <strong>
+                현재 장면에서 어떤 관계가 형성되어 있고,
+                어떤 행동이 적절한지
+              </strong>
+              판단하는 것을 목표로 합니다.
+            </p>
+
+          </div>
+
+        </header>
+
+
+        <div class="scenarios reveal">
+
+          <article>
+            <b>01</b>
+            <i>↗</i>
+            <h3>공사 구간</h3>
+            <p>임시 차선과 표지</p>
+          </article>
+
+          <article>
+            <b>02</b>
+            <i>↗</i>
+            <h3>정차 차량</h3>
+            <p>막힌 진행 차로</p>
+          </article>
+
+          <article>
+            <b>03</b>
+            <i>↗</i>
+            <h3>보행자</h3>
+            <p>예측하기 어려운 이동</p>
+          </article>
+
+          <article>
+            <b>04</b>
+            <i>↗</i>
+            <h3>복잡한 교차로</h3>
+            <p>다수의 상호작용</p>
+          </article>
+
+          <article>
+            <b>05</b>
+            <i>↗</i>
+            <h3>악천후</h3>
+            <p>제한된 관측 조건</p>
+          </article>
+
+          <article>
+            <b>06</b>
+            <i>!</i>
+            <h3>새로운 조합</h3>
+            <p>드문 롱테일 상황</p>
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         04 — CONVENTIONAL vs REASONING
+    ========================================================== -->
+
+    <section
+      class="road-compare"
+      id="difference"
+      data-section="difference"
+      aria-labelledby="difference-title"
+    >
+
+      <div class="wrap">
+
+        <header class="center reveal">
+
+          <p class="kicker">
+            04 — SAME SCENE / DIFFERENT DECISION PROCESS
+          </p>
+
+          <h2 id="difference-title">
+            같은 도로,<br>
+            <em>다른 판단 과정</em>
+          </h2>
+
+          <p>
+            기존 자율주행 시스템과 추론 기반 VLA 시스템은
+            같은 상황에서 동일하거나 유사한 주행 행동을
+            선택할 수도 있습니다.
+            중요한 차이는
+            <strong>
+              그 행동을 결정하는 과정과 표현 방식
+            </strong>
+            에 있습니다.
+          </p>
+
+        </header>
+
+
+        <!--
+          실제 비교 애니메이션에서 사용하는 단일 UI.
+          이전 legacy-comparison / comparison-v2는 제거함.
+        -->
+
+        <div
+          class="comparison-unified reveal"
+          id="comparison-unified"
+        >
+
+          <header class="unified-head">
+
+            <span>
+              SAME ROAD / SAME POSSIBLE ACTION
+            </span>
+
+            <h3 id="unified-title">
+              같은 주행 상황
+            </h3>
+
+            <p id="unified-subtitle">
+              같은 장면에서 판단 과정이
+              어떻게 달라지는지 단계별로 확인합니다.
+            </p>
+
+          </header>
+
+
+          <!--
+            script.js 호환용 컨트롤.
+            최종 JS에서는 새로운 단계 컨트롤로 대체됨.
+          -->
+
+          <div
+            class="unified-controls"
+            role="group"
+            aria-label="판단 방식 선택"
+          >
+
+            <button
+              type="button"
+              class="unified-system active"
+              data-unified-mode="modular"
+            >
+              기존 시스템
+            </button>
+
+            <button
+              type="button"
+              class="unified-system"
+              data-unified-mode="reasoning"
+            >
+              Alpamayo
+            </button>
+
+            <button
+              class="unified-previous"
+              id="unified-previous"
+              type="button"
+            >
+              이전 단계
+            </button>
+
+            <button
+              class="unified-next"
+              id="unified-next"
+              type="button"
+            >
+              다음 단계
+            </button>
+
+          </div>
+
+
+          <div class="unified-layout">
+
+            <!-- ROAD SCENE -->
+
+            <div class="unified-scene">
+
+              <div class="v2-road">
+
+                <i class="v2-lane-center"></i>
+
+                <span class="v2-road-label">
+                  SAME SCENARIO
+                </span>
+
+
+                <div class="v2-vehicle v2-ego">
+                  MY CAR
+                </div>
+
+
+                <div class="v2-vehicle v2-blocked">
+                  BLOCKED
+                </div>
+
+
+                <div class="v2-vehicle v2-oncoming">
+                  ONCOMING
+                </div>
+
+
+                <b class="v2-detection v2-detection-blocked">
+                  VEHICLE / OBSTACLE
+                </b>
+
+
+                <b class="v2-detection v2-detection-oncoming">
+                  ONCOMING VEHICLE
+                </b>
+
+
+                <svg
+                  class="v2-trajectory"
+                  viewBox="0 0 320 560"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
+
+                  <path
+                    d="
+                      M240 482
+                      C240 450 238 425 232 400
+                      C195 365 145 335 118 305
+                      C108 270 108 235 116 205
+                      C126 170 148 145 175 130
+                      C198 116 222 105 240 94
+                      C240 58 240 18 240 -20
+                    "
+                  />
+
+                </svg>
+
+              </div>
+
+            </div>
+
+
+            <!-- DECISION PROCESS -->
+
+            <aside class="unified-logic">
+
+              <b id="unified-phase">
+                SAME ROAD SCENARIO
+              </b>
+
+              <p id="unified-caption">
+                내 차량이 진행 차로를 일부 막고 있는
+                장애물에 접근하고 있습니다.
+              </p>
+
+
+              <ol class="unified-steps">
+
+                <li>
+                  PERCEPTION
+                </li>
+
+                <li>
+                  PREDICTION
+                </li>
+
+                <li>
+                  PLANNING
+                </li>
+
+                <li>
+                  CONTROL
+                </li>
+
+              </ol>
+
+
+              <div
+                class="unified-reasoning"
+                aria-live="polite"
+              ></div>
+
+            </aside>
+
+          </div>
+
+
+          <div class="unified-summary">
+
+            <strong>
+              SAME POSSIBLE ACTION
+            </strong>
+
+            <span>
+              DIFFERENT DECISION PROCESS
+            </span>
+
+          </div>
+
+
+          <button
+            class="replay-button unified-replay"
+            id="unified-replay"
+            type="button"
+          >
+            ↻ 다시 시작
+          </button>
+
+
+          <p class="comparison-note unified-note">
+
+            이 장면은 시스템 간 성능 우열을 비교하기 위한
+            실제 시험 결과가 아니라,
+            판단 구조의 차이를 설명하기 위한
+            개념적 시뮬레이션입니다.
+
+            <small>
+              기존 모듈형 자율주행 시스템도
+              인식·예측·계획을 통해 복잡한 상황을 처리할 수 있으며,
+              Alpamayo의 특징은
+              장면에 대한 Chain-of-Causation 추론과
+              주행 궤적을 함께 생성할 수 있다는 점에 있습니다.
+            </small>
+
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         05 — NVIDIA ALPAMAYO
+    ========================================================== -->
+
+    <section
+      id="alpamayo"
+      class="alpa"
+      data-section="alpamayo"
+    >
+
+      <div class="wrap">
+
+        <p class="kicker reveal">
+          05 — CASE STUDY / NVIDIA
+        </p>
+
+
+        <header class="alpa-title reveal">
+
+          <p>
+            OPEN REASONING VLA MODELS,<br>
+            FRAMEWORKS AND DATASETS
+          </p>
+
+          <h2>
+
+            <small>
+              NVIDIA 사례
+            </small>
+
+            ALPAMAYO
+
+          </h2>
+
+        </header>
+
+
+        <div class="alpa-body reveal">
+
+          <p>
+
+            NVIDIA Alpamayo는 하나의 단일 자율주행 모델이 아니라,
+
+            <strong>
+              오픈 추론 VLA 모델,
+              폐쇄 루프 시뮬레이션,
+              강화학습 프레임워크,
+              피지컬 AI 주행 데이터셋
+            </strong>
+
+            으로 구성된 자율주행 개발 플랫폼입니다.
+
+            NVIDIA Cosmos를 기반으로
+            멀티카메라 영상, 내비게이션 입력,
+            주행 맥락을 처리하고,
+
+            <strong>
+              주행 궤적과
+              Chain-of-Causation 추론 트레이스
+            </strong>
+
+            를 생성합니다.
+
+          </p>
+
+
+          <div>
+
+            <article>
+
+              <b>
+                01
+              </b>
+
+              <h3>
+                Reasoning VLA
+              </h3>
+
+              <p>
+                영상과 주행 맥락을 입력받아
+                미래 주행 궤적과
+                추론 결과를 함께 생성합니다.
+              </p>
+
+            </article>
+
+
+            <article>
+
+              <b>
+                02
+              </b>
+
+              <h3>
+                Chain of Causation
+              </h3>
+
+              <p>
+                차량이 특정 행동을 선택한 이유를
+                사람이 검토할 수 있는
+                추론 트레이스로 표현합니다.
+              </p>
+
+            </article>
+
+
+            <article>
+
+              <b>
+                03
+              </b>
+
+              <h3>
+                AlpaSim
+              </h3>
+
+              <p>
+                폐쇄 루프 시뮬레이션을 통해
+                모델의 행동과 그 결과를
+                반복적으로 평가합니다.
+              </p>
+
+            </article>
+
+
+            <article>
+
+              <b>
+                04
+              </b>
+
+              <h3>
+                AlpaGym + Open Data
+              </h3>
+
+              <p>
+                강화학습 프레임워크와
+                실제 주행 데이터셋을 연결해
+                모델 학습과 검증을 지원합니다.
+              </p>
+
+            </article>
+
+          </div>
+
+        </div>
+
+
+        <!-- 최신 모델군 -->
+
+        <div class="model-family reveal">
+
+          <header class="model-family-head">
+
+            <span>
+              MODEL FAMILY
+            </span>
+
+            <h3>
+              Alpamayo 모델 계열
+            </h3>
+
+          </header>
+
+
+          <div class="model-family-grid">
+
+            <article>
+
+              <span>
+                10B
+              </span>
+
+              <h4>
+                Alpamayo 1 Nano
+              </h4>
+
+              <p>
+                초기 공개 추론 VLA 모델
+              </p>
+
+            </article>
+
+
+            <article>
+
+              <span>
+                10B
+              </span>
+
+              <h4>
+                Alpamayo 1.5 Nano
+              </h4>
+
+              <p>
+                강화학습 기반 추론과
+                내비게이션 입력 등을 확장
+              </p>
+
+            </article>
+
+
+            <article class="featured">
+
+              <span>
+                34B
+              </span>
+
+              <h4>
+                Alpamayo 2 Super
+              </h4>
+
+              <p>
+                최신 공개 멀티태스크
+                자율주행 파운데이션 모델
+              </p>
+
+            </article>
+
+          </div>
+
+        </div>
+
+
+        <aside class="notice reveal">
+
+          <b>
+            IMPORTANT CONTEXT
+          </b>
+
+          <p>
+            Alpamayo는 자율주행 연구와 개발을 지원하는
+            기반 모델 및 개발 플랫폼입니다.
+            공개 모델 자체를 완성된 양산 차량용
+            자율주행 스택으로 해석해서는 안 됩니다.
+            실제 도로 적용에는 별도의 차량 시스템,
+            안전 설계, 검증 절차와
+            규제 요구사항 충족이 필요합니다.
+          </p>
+
+        </aside>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         06 — DEVELOPMENT LOOP
+    ========================================================== -->
+
+    <section
+      class="dark"
+      id="simulation"
+      data-section="simulation"
+    >
+
+      <div class="wrap">
+
+        <header class="section-head reveal">
+
+          <p class="kicker">
+            06 — DEVELOPMENT LOOP
+          </p>
+
+          <div>
+
+            <h2>
+              데이터에서<br>
+              <em>검증까지</em>
+            </h2>
+
+            <p>
+              Alpamayo 플랫폼은
+              데이터 준비와 추론 레이블 생성부터
+              모델 학습, 폐쇄 루프 시뮬레이션,
+              차량 내 적용까지
+              자율주행 개발 흐름을 지원합니다.
+            </p>
+
+          </div>
+
+        </header>
+
+
+        <div
+          class="console reveal"
+          id="console"
+        >
+
+          <div class="logs">
+
+            <header>
+
+              <b>
+                ALPAMAYO DEVELOPMENT PIPELINE
+              </b>
+
+              <span>
+                PROCESSING
+              </span>
+
+            </header>
+
+
+            <ol>
+
+              <li>
+
+                <b>
+                  01
+                </b>
+
+                <div>
+
+                  <h3>
+                    데이터 및 레이블
+                  </h3>
+
+                  <p>
+                    실제 주행 데이터와
+                    Chain-of-Causation 기반
+                    추론 레이블을 준비합니다.
+                  </p>
+
+                </div>
+
+                <i>
+                  DATA
+                </i>
+
+              </li>
+
+
+              <li>
+
+                <b>
+                  02
+                </b>
+
+                <div>
+
+                  <h3>
+                    모델 학습 · 후학습
+                  </h3>
+
+                  <p>
+                    AlpaGym의 폐쇄 루프
+                    강화학습 환경 등을 활용해
+                    모델을 학습하고 최적화합니다.
+                  </p>
+
+                </div>
+
+                <i>
+                  RL
+                </i>
+
+              </li>
+
+
+              <li>
+
+                <b>
+                  03
+                </b>
+
+                <div>
+
+                  <h3>
+                    시뮬레이션 · 검증
+                  </h3>
+
+                  <p>
+                    AlpaSim의 폐쇄 루프 환경에서
+                    실제 도로 적용 전
+                    모델의 행동을 평가합니다.
+                  </p>
+
+                </div>
+
+                <i>
+                  SIM
+                </i>
+
+              </li>
+
+
+              <li>
+
+                <b>
+                  04
+                </b>
+
+                <div>
+
+                  <h3>
+                    차량 내 적용
+                  </h3>
+
+                  <p>
+                    검증된 개발 과정을 바탕으로
+                    NVIDIA DRIVE AGX Thor 등
+                    차량용 컴퓨팅 플랫폼과 연결할 수 있습니다.
+                  </p>
+
+                </div>
+
+                <i>
+                  DRIVE
+                </i>
+
+              </li>
+
+            </ol>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         07 — TRUST & SAFETY
+    ========================================================== -->
+
+    <section
+      id="safety"
+      data-section="safety"
+    >
+
+      <div class="wrap">
+
+        <header class="split reveal">
+
+          <div>
+
+            <p class="kicker">
+              07 — TRUST & SAFETY
+            </p>
+
+            <h2>
+              설명하고,<br>
+              <em>검증하는 자율주행</em>
+            </h2>
+
+          </div>
+
+
+          <div>
+
+            <p>
+              자율주행 안전은
+              모델의 추론 능력만으로 완성되지 않습니다.
+              모델의 판단을 검토하고,
+              다양한 조건에서 반복적으로 시험하며,
+              실제 차량 수준의 안전 설계를
+              함께 적용해야 합니다.
+            </p>
+
+            <p class="lime">
+              추론의 가시성은
+              안전 검증을 위한 하나의 도구이지,
+              그 자체가 안전을 보장하는 것은 아닙니다.
+            </p>
+
+          </div>
+
+        </header>
+
+
+        <div class="risks reveal">
+
+          <article>
+            <b>01</b>
+            <h3>해석 가능성</h3>
+            <p>판단 근거 검토</p>
+          </article>
+
+          <article>
+            <b>02</b>
+            <h3>재현성</h3>
+            <p>동일 조건 반복 시험</p>
+          </article>
+
+          <article>
+            <b>03</b>
+            <h3>폐쇄 루프 검증</h3>
+            <p>행동 결과 평가</p>
+          </article>
+
+          <article>
+            <b>04</b>
+            <h3>데이터 품질</h3>
+            <p>현실적인 주행 데이터</p>
+          </article>
+
+          <article>
+            <b>05</b>
+            <h3>안전 아키텍처</h3>
+            <p>중복성과 시스템 안전</p>
+          </article>
+
+          <article>
+            <b>06</b>
+            <h3>실차 검증</h3>
+            <p>배포 전 체계적 평가</p>
+          </article>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         08 — NEXT STEP
+    ========================================================== -->
+
+    <section
+      class="future"
+      id="future"
+    >
+
+      <div class="grid-bg"></div>
+
+      <div class="wrap">
+
+        <p class="kicker reveal">
+          08 — NEXT STEP
+        </p>
+
+
+        <h2 class="reveal">
+
+          인식하는 차량에서<br>
+
+          <span>
+            추론하는 차량로,
+          </span>
+
+          <br>
+
+          <em>
+            그리고 검증 가능한 AI로.
+          </em>
+
+        </h2>
+
+
+        <div class="future-copy reveal">
+
+          <p>
+            추론 기반 VLA 모델은
+            기존 자율주행 기술을 단순히 대체하는 개념이라기보다,
+            복잡한 장면에 대한 이해와
+            행동 결정 과정을 확장하려는
+            새로운 접근 중 하나입니다.
+          </p>
+
+          <p>
+            NVIDIA Alpamayo는
+            모델, 데이터, 강화학습,
+            폐쇄 루프 시뮬레이션을 연결하여
+            <strong>
+              레벨 4 자율주행 연구와 개발을 지원하는
+              오픈 플랫폼
+            </strong>
+            을 제공하고 있습니다.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =========================================================
+         09 — REFERENCES
+    ========================================================== -->
+
+    <section
+      class="refs"
+      id="references"
+    >
+
+      <div class="wrap">
+
+        <header class="section-head reveal">
+
+          <p class="kicker">
+            09 — REFERENCES
+          </p>
+
+          <div>
+
+            <h2>
+              참고 자료
+            </h2>
+
+            <p>
+              주요 내용은 NVIDIA 공식 제품 페이지,
+              개발자 자료와 공개 저장소를 기준으로 정리했습니다.
+            </p>
+
+          </div>
+
+        </header>
+
+
+        <div class="ref-list reveal">
+
+          <a
+            href="https://www.nvidia.com/ko-kr/solutions/autonomous-vehicles/alpamayo/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            <b>
+              01
+            </b>
+
+            <span>
+
+              NVIDIA Alpamayo
+
+              <small>
+                공식 Alpamayo 제품 및 기술 개요
+              </small>
+
+            </span>
+
+            <i>
+              →
+            </i>
+
+          </a>
+
+
+          <a
+            href="https://github.com/NVlabs/alpamayo-recipes"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            <b>
+              02
+            </b>
+
+            <span>
+
+              NVIDIA Alpamayo Developer Hub
+
+              <small>
+                모델 학습, 후학습 및 개발 레시피
+              </small>
+
+            </span>
+
+            <i>
+              →
+            </i>
+
+          </a>
+
+
+          <a
+            href="https://github.com/NVlabs/alpamayo2"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            <b>
+              03
+            </b>
+
+            <span>
+
+              Alpamayo 2 Super
+
+              <small>
+                34B 멀티태스크 자율주행 파운데이션 모델
+              </small>
+
+            </span>
+
+            <i>
+              →
+            </i>
+
+          </a>
+
+
+          <a
+            href="https://developer.nvidia.com/blog/building-autonomous-vehicles-that-reason-with-nvidia-alpamayo/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            <b>
+              04
+            </b>
+
+            <span>
+
+              NVIDIA Technical Blog
+
+              <small>
+                추론 기반 자율주행과 Alpamayo 개발 구조
+              </small>
+
+            </span>
+
+            <i>
+              →
+            </i>
+
+          </a>
+
+
+          <a
+            href="https://huggingface.co/nvidia"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+
+            <b>
+              05
+            </b>
+
+            <span>
+
+              NVIDIA on Hugging Face
+
+              <small>
+                공개 모델 및 Physical AI 데이터
+              </small>
+
+            </span>
+
+            <i>
+              →
+            </i>
+
+          </a>
+
+        </div>
+
+
+        <p class="disclaimer">
+
+          본 페이지는
+          NVIDIA Alpamayo 및 추론 기반 자율주행 기술을
+          설명하기 위해 제작한 교육용 웹 프로젝트입니다.
+
+          <strong>
+            NVIDIA의 공식 웹사이트 또는 제품 페이지가 아닙니다.
+          </strong>
+
+        </p>
+
+      </div>
+
+    </section>
+
   </main>
-  <footer><div class="wrap"><a class="brand" href="#intro"><b></b>ROAD/<em>REASON</em></a><p>Reasoning-Based Autonomous Driving</p><p>© <span id="year"></span> Academic Web Project</p></div></footer><script src="script.js"></script>
-</body></html>
+
+
+  <!-- =========================================================
+       FOOTER
+  ========================================================== -->
+
+  <footer>
+
+    <div class="wrap">
+
+      <a
+        class="brand"
+        href="#intro"
+      >
+        <b></b>
+        ROAD/<em>REASON</em>
+      </a>
+
+      <p>
+        Reasoning-Based Autonomous Driving
+      </p>
+
+      <p>
+        ©
+        <span id="year"></span>
+        Academic Web Project
+      </p>
+
+    </div>
+
+  </footer>
+
+
+  <script src="script.js"></script>
+
+</body>
+
+</html>
