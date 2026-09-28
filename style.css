@@ -1479,7 +1479,7 @@ nav {
 .flow p {
   color: var(--muted);
 
-  font-size: 0.9rem;
+  font-size: 1rem;
 
   line-height: 1.9;
 }
@@ -1705,7 +1705,7 @@ nav {
 
   color: #747d76;
 
-  font-size: 0.75rem;
+  font-size: 0.9rem;
 
   line-height: 1.7;
 }
@@ -2676,7 +2676,7 @@ button:disabled {
 
   color: #f1f4ef;
 
-  font-size: 0.9rem;
+  font-size: 1.05rem;
 
   font-weight: 800;
 
@@ -2706,7 +2706,7 @@ button:disabled {
 
   background: transparent;
 
-  font-size: 0.72rem;
+  font-size: 0.9rem;
 
   opacity: 0.88;
 }
@@ -3286,7 +3286,7 @@ article.featured {
     0
     0.35rem;
 
-  font-size: 0.82rem;
+  font-size: 1.08rem;
 }
 
 .logs p {
@@ -3294,7 +3294,7 @@ article.featured {
 
   color: var(--muted);
 
-  font-size: 0.76rem;
+  font-size: 0.92rem;
 
   line-height: 1.7;
 }
@@ -3304,7 +3304,7 @@ article.featured {
 
   font:
     normal
-    0.52rem/1
+    0.7rem/1
     var(--display);
 }
 
@@ -3351,7 +3351,7 @@ article.featured {
     0
     0.5rem;
 
-  font-size: 0.98rem;
+  font-size: 1.12rem;
 }
 
 .risks p {
@@ -3359,7 +3359,7 @@ article.featured {
 
   color: #747c76;
 
-  font-size: 0.72rem;
+  font-size: 1rem;
 }
 
 
@@ -3533,7 +3533,7 @@ article.featured {
 
   font-family: var(--body);
 
-  font-size: 0.72rem;
+  font-size: 0.88rem;
 
   font-weight: 400;
 }
@@ -3549,7 +3549,7 @@ article.featured {
 
   color: #707872;
 
-  font-size: 0.72rem;
+  font-size: 0.9rem;
 
   line-height: 1.8;
 
@@ -4462,7 +4462,7 @@ footer p {
 
 
   .ref-list span {
-    font-size: 0.9rem;
+    font-size: 1.05rem;
   }
 
 

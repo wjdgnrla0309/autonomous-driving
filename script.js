@@ -2437,18 +2437,6 @@
     ========================================================== */
 
     if (
-      reducedMotion.matches
-    ) {
-
-      isVisible = true;
-
-
-      applyStage(
-        stages.length -
-          1
-      );
-
-    } else if (
       "IntersectionObserver" in
       window
     ) {
@@ -2465,26 +2453,6 @@
 
           isVisible =
             nowVisible;
-
-
-          /*
-           * 처음 화면에 들어왔을 때만
-           * 자동재생 시작
-           */
-
-          if (
-            nowVisible &&
-            !hasPlayed
-          ) {
-
-            hasPlayed = true;
-
-
-            startAuto();
-
-
-            return;
-          }
 
 
           /*
@@ -2534,11 +2502,7 @@
     } else {
 
       isVisible = true;
-
-      hasPlayed = true;
-
-
-      startAuto();
+      applyStage(currentStage);
     }
 
 
